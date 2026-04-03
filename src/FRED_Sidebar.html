@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top" />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Google Sans", Roboto, Arial, sans-serif;
+        font-size: 13px;
+        color: #202124;
+        background: #f8f9fa;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      /* ---- Tabs ---- */
+
+      .tab-bar {
+        display: flex;
+        background: #fff;
+        border-bottom: 1px solid #dadce0;
+        flex-shrink: 0;
+      }
+
+      .tab-btn {
+        flex: 1;
+        padding: 10px 4px;
+        border: none;
+        background: none;
+        font-size: 12px;
+        font-weight: 500;
+        color: #5f6368;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: color 0.15s, border-color 0.15s;
+      }
+
+      .tab-btn:hover {
+        color: #202124;
+      }
+
+      .tab-btn.active {
+        color: #4285f4;
+        border-bottom-color: #4285f4;
+      }
+
+      .tab-panel {
+        display: none;
+        flex: 1;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .tab-panel.active {
+        display: flex;
+      }
+
+      /* ---- Buttons ---- */
+
+      .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+
+      .btn-primary {
+        background: #4285f4;
+        color: #fff;
+      }
+
+      .btn-primary:hover {
+        background: #3367d6;
+      }
+
+      .btn-primary:disabled {
+        background: #a8c7fa;
+        cursor: default;
+      }
+
+      .btn-sm {
+        padding: 5px 12px;
+        font-size: 12px;
+      }
+
+      .btn-outline {
+        background: #fff;
+        color: #4285f4;
+        border: 1px solid #dadce0;
+      }
+
+      .btn-outline:hover {
+        background: #f0f4ff;
+      }
+
+      /* ---- Search tab ---- */
+
+      .search-bar {
+        display: flex;
+        gap: 6px;
+        padding: 10px 12px 6px;
+        background: #fff;
+        flex-shrink: 0;
+      }
+
+      .search-bar input {
+        flex: 1;
+        padding: 8px 10px;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        font-size: 13px;
+        outline: none;
+        transition: border-color 0.15s;
+      }
+
+      .search-bar input:focus {
+        border-color: #4285f4;
+      }
+
+      .search-mode {
+        display: flex;
+        gap: 4px;
+        padding: 0 12px 8px;
+        background: #fff;
+        border-bottom: 1px solid #dadce0;
+        flex-shrink: 0;
+      }
+
+      .search-mode label {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 11px;
+        color: #5f6368;
+        cursor: pointer;
+      }
+
+      .search-mode input[type="radio"] {
+        margin: 0;
+      }
+
+      /* ---- Results ---- */
+
+      .results-area {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 8px 12px;
+      }
+
+      .results-label {
+        font-size: 11px;
+        font-weight: 500;
+        color: #5f6368;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+      }
+
+      .card {
+        background: #fff;
+        border: 1px solid #dadce0;
+        border-radius: 8px;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+        transition: box-shadow 0.15s;
+      }
+
+      .card:hover {
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+      }
+
+      .card-id {
+        font-family: "Roboto Mono", monospace;
+        font-size: 12px;
+        font-weight: 600;
+        color: #4285f4;
+      }
+
+      .card-title {
+        font-size: 13px;
+        font-weight: 500;
+        margin: 3px 0;
+        line-height: 1.3;
+      }
+
+      .card-meta {
+        font-size: 11px;
+        color: #5f6368;
+        margin-bottom: 6px;
+      }
+
+      .card-meta span + span::before {
+        content: " \00b7  ";
+      }
+
+      .card-actions {
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .status-msg {
+        font-size: 12px;
+        padding: 6px 0;
+        text-align: center;
+      }
+
+      .status-msg.error {
+        color: #d93025;
+      }
+
+      .status-msg.success {
+        color: #188038;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 32px 16px;
+        color: #80868b;
+      }
+
+      .empty-state .icon {
+        font-size: 32px;
+        margin-bottom: 8px;
+      }
+
+      /* ---- Options panel (shared by Search & Quick Fetch) ---- */
+
+      .options-panel {
+        background: #fff;
+        border-top: 1px solid #dadce0;
+        padding: 10px 12px;
+        flex-shrink: 0;
+      }
+
+      .options-panel summary {
+        font-size: 11px;
+        font-weight: 500;
+        color: #5f6368;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        user-select: none;
+        padding: 2px 0;
+      }
+
+      .options-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-top: 8px;
+      }
+
+      .opt-group label {
+        display: block;
+        font-size: 11px;
+        color: #5f6368;
+        margin-bottom: 2px;
+      }
+
+      .opt-group select,
+      .opt-group input {
+        width: 100%;
+        padding: 5px 6px;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        font-size: 12px;
+        outline: none;
+      }
+
+      .opt-group select:focus,
+      .opt-group input:focus {
+        border-color: #4285f4;
+      }
+
+      .opt-row {
+        display: flex;
+        gap: 8px;
+      }
+
+      .opt-row .opt-group {
+        flex: 1;
+      }
+
+      /* ---- Quick Fetch tab ---- */
+
+      .quick-section {
+        padding: 10px 12px;
+        overflow-y: auto;
+        flex: 1;
+      }
+
+      .quick-section-title {
+        font-size: 11px;
+        font-weight: 500;
+        color: #5f6368;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 10px 0 6px;
+      }
+
+      .quick-section-title:first-child {
+        margin-top: 0;
+      }
+
+      .quick-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .quick-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #fff;
+        border: 1px solid #dadce0;
+        border-radius: 6px;
+        padding: 7px 10px;
+        transition: box-shadow 0.15s;
+      }
+
+      .quick-item:hover {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .quick-item-info {
+        min-width: 0;
+      }
+
+      .quick-item-id {
+        font-family: "Roboto Mono", monospace;
+        font-size: 11px;
+        font-weight: 600;
+        color: #4285f4;
+      }
+
+      .quick-item-name {
+        font-size: 11px;
+        color: #5f6368;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .quick-item .btn-sm {
+        flex-shrink: 0;
+        margin-left: 6px;
+      }
+
+      /* ---- Reference tab ---- */
+
+      #tab-reference {
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .ref-main {
+        flex: 1 1 auto;
+        min-height: 72px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 12px;
+      }
+
+      .ref-main h3 {
+        font-size: 13px;
+        font-weight: 600;
+        margin: 14px 0 6px;
+      }
+
+      .ref-main h3:first-child {
+        margin-top: 0;
+      }
+
+      .ref-main p {
+        font-size: 12px;
+        color: #3c4043;
+        line-height: 1.5;
+        margin-bottom: 8px;
+      }
+
+      .ref-series {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        margin-bottom: 10px;
+      }
+
+      .ref-series a {
+        font-size: 12px;
+        color: #4285f4;
+        text-decoration: none;
+        line-height: 1.4;
+      }
+
+      .ref-series a:hover {
+        text-decoration: underline;
+      }
+
+      .ref-series a .ref-sid {
+        font-family: "Roboto Mono", monospace;
+        font-weight: 600;
+        font-size: 11px;
+      }
+
+      .ref-series a .ref-name {
+        color: #5f6368;
+        font-size: 11px;
+      }
+
+      .ref-footer {
+        flex: 0 1 52%;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        border-top: 1px solid #dadce0;
+        background: #fff;
+      }
+
+      .ref-footer-scroll {
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 8px 12px 12px;
+        flex: 1;
+        min-height: 0;
+      }
+
+      .ref-api-panel {
+        margin-bottom: 8px;
+      }
+
+      .ref-api-panel summary {
+        font-size: 11px;
+        font-weight: 500;
+        color: #5f6368;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .ref-api-panel .opt-group label {
+        display: block;
+        font-size: 11px;
+        color: #5f6368;
+        margin-bottom: 2px;
+      }
+
+      .ref-api-panel input[type="password"] {
+        width: 100%;
+        padding: 6px 8px;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        font-size: 12px;
+      }
+
+      .ref-export-btn {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      .cat-browser {
+        border-top: 1px solid #e8eaed;
+        padding-top: 10px;
+        margin-top: 4px;
+      }
+
+      .cat-browser h3 {
+        font-size: 12px;
+        font-weight: 600;
+        margin: 0 0 4px;
+      }
+
+      .cat-hint {
+        font-size: 11px;
+        color: #5f6368;
+        line-height: 1.35;
+        margin-bottom: 8px;
+      }
+
+      .cat-breadcrumb {
+        font-size: 11px;
+        color: #5f6368;
+        line-height: 1.4;
+        margin-bottom: 6px;
+        word-break: break-word;
+      }
+
+      .cat-breadcrumb span.crumb {
+        color: #4285f4;
+        cursor: pointer;
+        text-decoration: underline;
+      }
+
+      .cat-toolbar {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        margin-bottom: 6px;
+        flex-wrap: wrap;
+      }
+
+      .cat-subhead {
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        color: #5f6368;
+        margin: 6px 0 4px;
+      }
+
+      .cat-list {
+        max-height: 180px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        margin-bottom: 8px;
+      }
+
+      .cat-row {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 5px 6px;
+        margin-bottom: 3px;
+        border: 1px solid #e8eaed;
+        border-radius: 4px;
+        background: #fafafa;
+        font-size: 11px;
+        cursor: pointer;
+        line-height: 1.3;
+      }
+
+      .cat-row:hover {
+        background: #e8f0fe;
+        border-color: #4285f4;
+      }
+
+      .cat-row-name {
+        font-weight: 500;
+        color: #202124;
+      }
+
+      .cat-row-id {
+        font-family: "Roboto Mono", monospace;
+        font-size: 10px;
+        color: #80868b;
+      }
+
+      .cat-series-line {
+        font-size: 11px;
+        margin: 6px 0;
+        color: #3c4043;
+      }
+
+      .cat-series-line strong {
+        color: #202124;
+      }
+
+      /* ---- Spinner ---- */
+
+      .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #dadce0;
+        border-top-color: #4285f4;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        vertical-align: middle;
+        margin-right: 4px;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Tab bar -->
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="search">Search</button>
+      <button class="tab-btn" data-tab="quick">Quick Fetch</button>
+      <button class="tab-btn" data-tab="reference">Reference</button>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- SEARCH TAB                                                         -->
+    <!-- ================================================================== -->
+    <div class="tab-panel active" id="tab-search">
+      <div class="search-bar">
+        <input
+          id="searchInput"
+          type="text"
+          placeholder="Search FRED series..."
+        />
+        <button id="searchBtn" class="btn btn-primary" onclick="doSearch()">
+          Search
+        </button>
+      </div>
+      <div class="search-mode">
+        <label>
+          <input type="radio" name="searchType" value="full_text" checked />
+          Full text
+        </label>
+        <label>
+          <input type="radio" name="searchType" value="series_id" />
+          Series ID (wildcards)
+        </label>
+      </div>
+
+      <div class="results-area" id="resultsArea">
+        <div class="empty-state">
+          <div class="icon">&#x1F4C8;</div>
+          <div>Search for economic data series by keyword or series ID</div>
+        </div>
+      </div>
+
+      <div class="options-panel" id="searchOptions">
+        <details>
+          <summary>Fetch Options</summary>
+          <div class="options-stack">
+            <div class="opt-group">
+              <label for="optUnits">Units</label>
+              <select id="optUnits">
+                <option value="">Default (Levels)</option>
+                <option value="chg">Change</option>
+                <option value="ch1">Change from Year Ago</option>
+                <option value="pch">Percent Change</option>
+                <option value="pc1">% Change from Year Ago</option>
+                <option value="pca">Compounded Annual Rate</option>
+                <option value="cch">Cont. Compounded Rate</option>
+                <option value="cca">Cont. Compounded Annual Rate</option>
+                <option value="log">Natural Log</option>
+              </select>
+            </div>
+            <div class="opt-row">
+              <div class="opt-group">
+                <label for="optFreq">Frequency</label>
+                <select id="optFreq">
+                  <option value="">Default</option>
+                  <option value="d">Daily</option>
+                  <option value="w">Weekly</option>
+                  <option value="bw">Biweekly</option>
+                  <option value="m">Monthly</option>
+                  <option value="q">Quarterly</option>
+                  <option value="sa">Semiannual</option>
+                  <option value="a">Annual</option>
+                </select>
+              </div>
+              <div class="opt-group">
+                <label for="optAgg">Aggregation</label>
+                <select id="optAgg">
+                  <option value="">Average</option>
+                  <option value="sum">Sum</option>
+                  <option value="eop">End of Period</option>
+                </select>
+              </div>
+            </div>
+            <div class="opt-row">
+              <div class="opt-group">
+                <label for="optStart">Start date</label>
+                <input id="optStart" type="date" />
+              </div>
+              <div class="opt-group">
+                <label for="optEnd">End date</label>
+                <input id="optEnd" type="date" />
+              </div>
+            </div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- QUICK FETCH TAB                                                    -->
+    <!-- ================================================================== -->
+    <div class="tab-panel" id="tab-quick">
+      <div class="quick-section" id="quickSection">
+        <div class="quick-section-title">Inflation</div>
+        <div class="quick-grid">
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-id">CPIAUCSL</div>
+              <div class="quick-item-name">Consumer Price Index</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="quickFetch('CPIAUCSL','Consumer Price Index (CPI)',this)">Fetch</button>
+          </div>
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-id">PCE</div>
+              <div class="quick-item-name">Personal Consumption Expenditures</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="quickFetch('PCE','Personal Consumption Expenditures (PCE)',this)">Fetch</button>
+          </div>
+        </div>
+
+        <div class="quick-section-title">Inflation Expectations</div>
+        <div class="quick-grid">
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-id">EXPINF1YR</div>
+              <div class="quick-item-name">Expected Inflation (1 Year)</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="quickFetch('EXPINF1YR','Expected Inflation 1 Year',this)">Fetch</button>
+          </div>
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-id">EXPINF30YR</div>
+              <div class="quick-item-name">Expected Inflation (30 Year)</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="quickFetch('EXPINF30YR','Expected Inflation 30 Year',this)">Fetch</button>
+          </div>
+        </div>
+
+        <div class="quick-section-title">Labor Market</div>
+        <div class="quick-grid">
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-id">UNRATE</div>
+              <div class="quick-item-name">Unemployment Rate</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="quickFetch('UNRATE','Unemployment Rate',this)">Fetch</button>
+          </div>
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-id">PAYEMS</div>
+              <div class="quick-item-name">Nonfarm Payrolls</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="quickFetch('PAYEMS','Nonfarm Payrolls',this)">Fetch</button>
+          </div>
+        </div>
+
+        <div class="quick-section-title">Growth</div>
+        <div class="quick-grid">
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-id">GDPC1</div>
+              <div class="quick-item-name">Real GDP</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="quickFetch('GDPC1','Real GDP',this)">Fetch</button>
+          </div>
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-id">INDPRO</div>
+              <div class="quick-item-name">Industrial Production Index</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="quickFetch('INDPRO','Industrial Production Index',this)">Fetch</button>
+          </div>
+        </div>
+
+        <div class="quick-section-title">Interest Rates</div>
+        <div class="quick-grid">
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-id">FEDFUNDS</div>
+              <div class="quick-item-name">Fed Funds Effective Rate</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="quickFetch('FEDFUNDS','Fed Funds Effective Rate',this)">Fetch</button>
+          </div>
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-id">DGS10</div>
+              <div class="quick-item-name">10-Year Treasury Yield</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="quickFetch('DGS10','10-Year Treasury Yield',this)">Fetch</button>
+          </div>
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-id">DGS30</div>
+              <div class="quick-item-name">30-Year Treasury Yield</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="quickFetch('DGS30','30-Year Treasury Yield',this)">Fetch</button>
+          </div>
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-id">TB3MS</div>
+              <div class="quick-item-name">3-Month Treasury Bill Rate</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="quickFetch('TB3MS','3-Month Treasury Bill Rate',this)">Fetch</button>
+          </div>
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-id">MORTGAGE30US</div>
+              <div class="quick-item-name">30-Year Fixed Mortgage Rate</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="quickFetch('MORTGAGE30US','30-Year Fixed Mortgage Rate',this)">Fetch</button>
+          </div>
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-id">T10Y2Y</div>
+              <div class="quick-item-name">10Y-2Y Treasury Spread</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="quickFetch('T10Y2Y','10Y-2Y Treasury Spread',this)">Fetch</button>
+          </div>
+        </div>
+
+        <div class="quick-section-title">Money Supply</div>
+        <div class="quick-grid">
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-id">M2SL</div>
+              <div class="quick-item-name">M2 Money Stock</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="quickFetch('M2SL','M2 Money Stock',this)">Fetch</button>
+          </div>
+        </div>
+
+        <div class="quick-section-title">Market Sentiment</div>
+        <div class="quick-grid">
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-id">VIXCLS</div>
+              <div class="quick-item-name">VIX Index</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="quickFetch('VIXCLS','VIX Index',this)">Fetch</button>
+          </div>
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-id">UMCSENT</div>
+              <div class="quick-item-name">Consumer Sentiment (UMich)</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="quickFetch('UMCSENT','Consumer Sentiment (UMich)',this)">Fetch</button>
+          </div>
+        </div>
+
+        <div class="quick-section-title">Equity Indices</div>
+        <div class="quick-grid">
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-id">DJIA</div>
+              <div class="quick-item-name">Dow Jones Industrial Average</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="quickFetch('DJIA','Dow Jones Industrial Average',this)">Fetch</button>
+          </div>
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-id">SP500</div>
+              <div class="quick-item-name">S&amp;P 500</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="quickFetch('SP500','S&amp;P 500',this)">Fetch</button>
+          </div>
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-id">NASDAQCOM</div>
+              <div class="quick-item-name">NASDAQ Composite Index</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="quickFetch('NASDAQCOM','NASDAQ Composite Index',this)">Fetch</button>
+          </div>
+        </div>
+
+        <div class="quick-section-title">Commodities &amp; Energy</div>
+        <div class="quick-grid">
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-id">DHHNGSP</div>
+              <div class="quick-item-name">Henry Hub Natural Gas Spot</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="quickFetch('DHHNGSP','Henry Hub Natural Gas Spot Price',this)">Fetch</button>
+          </div>
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-id">WTISPLC</div>
+              <div class="quick-item-name">WTI Crude Oil Spot Price</div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="quickFetch('WTISPLC','WTI Crude Oil Spot Price',this)">Fetch</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="options-panel" id="quickOptions">
+        <details>
+          <summary>Fetch Options</summary>
+          <div class="options-stack">
+            <div class="opt-group">
+              <label for="qOptUnits">Units</label>
+              <select id="qOptUnits">
+                <option value="">Default (Levels)</option>
+                <option value="chg">Change</option>
+                <option value="ch1">Change from Year Ago</option>
+                <option value="pch">Percent Change</option>
+                <option value="pc1">% Change from Year Ago</option>
+                <option value="pca">Compounded Annual Rate</option>
+                <option value="cch">Cont. Compounded Rate</option>
+                <option value="cca">Cont. Compounded Annual Rate</option>
+                <option value="log">Natural Log</option>
+              </select>
+            </div>
+            <div class="opt-row">
+              <div class="opt-group">
+                <label for="qOptFreq">Frequency</label>
+                <select id="qOptFreq">
+                  <option value="">Default</option>
+                  <option value="d">Daily</option>
+                  <option value="w">Weekly</option>
+                  <option value="bw">Biweekly</option>
+                  <option value="m">Monthly</option>
+                  <option value="q">Quarterly</option>
+                  <option value="sa">Semiannual</option>
+                  <option value="a">Annual</option>
+                </select>
+              </div>
+              <div class="opt-group">
+                <label for="qOptAgg">Aggregation</label>
+                <select id="qOptAgg">
+                  <option value="">Average</option>
+                  <option value="sum">Sum</option>
+                  <option value="eop">End of Period</option>
+                </select>
+              </div>
+            </div>
+            <div class="opt-row">
+              <div class="opt-group">
+                <label for="qOptStart">Start date</label>
+                <input id="qOptStart" type="date" />
+              </div>
+              <div class="opt-group">
+                <label for="qOptEnd">End date</label>
+                <input id="qOptEnd" type="date" />
+              </div>
+            </div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- REFERENCE TAB                                                      -->
+    <!-- ================================================================== -->
+    <div class="tab-panel" id="tab-reference">
+      <div class="ref-main">
+        <h3>About FRED</h3>
+        <p>
+          FRED (Federal Reserve Economic Data) is a database maintained by the
+          Federal Reserve Bank of St. Louis with over 800,000 economic time
+          series from dozens of national and international sources. Data spans
+          annual, quarterly, monthly, weekly, and daily frequencies.
+        </p>
+
+        <h3>Commonly Used Series</h3>
+
+        <div class="ref-series" id="refSeriesList">
+          <a href="https://fred.stlouisfed.org/series/CPIAUCSL" target="_blank">
+            <span class="ref-sid">CPIAUCSL</span>
+            <span class="ref-name"> &mdash; Consumer Price Index for All Urban Consumers</span>
+          </a>
+          <a href="https://fred.stlouisfed.org/series/PCE" target="_blank">
+            <span class="ref-sid">PCE</span>
+            <span class="ref-name"> &mdash; Personal Consumption Expenditures</span>
+          </a>
+          <a href="https://fred.stlouisfed.org/series/EXPINF1YR" target="_blank">
+            <span class="ref-sid">EXPINF1YR</span>
+            <span class="ref-name"> &mdash; Expected Inflation Rate over 1 Year</span>
+          </a>
+          <a href="https://fred.stlouisfed.org/series/EXPINF30YR" target="_blank">
+            <span class="ref-sid">EXPINF30YR</span>
+            <span class="ref-name"> &mdash; Expected Inflation Rate over 30 Years</span>
+          </a>
+          <a href="https://fred.stlouisfed.org/series/UNRATE" target="_blank">
+            <span class="ref-sid">UNRATE</span>
+            <span class="ref-name"> &mdash; Unemployment Rate</span>
+          </a>
+          <a href="https://fred.stlouisfed.org/series/PAYEMS" target="_blank">
+            <span class="ref-sid">PAYEMS</span>
+            <span class="ref-name"> &mdash; All Employees, Total Nonfarm</span>
+          </a>
+          <a href="https://fred.stlouisfed.org/series/GDPC1" target="_blank">
+            <span class="ref-sid">GDPC1</span>
+            <span class="ref-name"> &mdash; Real Gross Domestic Product</span>
+          </a>
+          <a href="https://fred.stlouisfed.org/series/INDPRO" target="_blank">
+            <span class="ref-sid">INDPRO</span>
+            <span class="ref-name"> &mdash; Industrial Production Index</span>
+          </a>
+          <a href="https://fred.stlouisfed.org/series/FEDFUNDS" target="_blank">
+            <span class="ref-sid">FEDFUNDS</span>
+            <span class="ref-name"> &mdash; Federal Funds Effective Rate</span>
+          </a>
+          <a href="https://fred.stlouisfed.org/series/DGS10" target="_blank">
+            <span class="ref-sid">DGS10</span>
+            <span class="ref-name"> &mdash; 10-Year Treasury Constant Maturity Rate</span>
+          </a>
+          <a href="https://fred.stlouisfed.org/series/DGS30" target="_blank">
+            <span class="ref-sid">DGS30</span>
+            <span class="ref-name"> &mdash; 30-Year Treasury Constant Maturity Rate</span>
+          </a>
+          <a href="https://fred.stlouisfed.org/series/TB3MS" target="_blank">
+            <span class="ref-sid">TB3MS</span>
+            <span class="ref-name"> &mdash; 3-Month Treasury Bill: Secondary Market Rate</span>
+          </a>
+          <a href="https://fred.stlouisfed.org/series/MORTGAGE30US" target="_blank">
+            <span class="ref-sid">MORTGAGE30US</span>
+            <span class="ref-name"> &mdash; 30-Year Fixed Rate Mortgage Average</span>
+          </a>
+          <a href="https://fred.stlouisfed.org/series/T10Y2Y" target="_blank">
+            <span class="ref-sid">T10Y2Y</span>
+            <span class="ref-name"> &mdash; 10-Year Minus 2-Year Treasury Spread</span>
+          </a>
+          <a href="https://fred.stlouisfed.org/series/M2SL" target="_blank">
+            <span class="ref-sid">M2SL</span>
+            <span class="ref-name"> &mdash; M2 Money Stock</span>
+          </a>
+          <a href="https://fred.stlouisfed.org/series/VIXCLS" target="_blank">
+            <span class="ref-sid">VIXCLS</span>
+            <span class="ref-name"> &mdash; CBOE Volatility Index (VIX)</span>
+          </a>
+          <a href="https://fred.stlouisfed.org/series/UMCSENT" target="_blank">
+            <span class="ref-sid">UMCSENT</span>
+            <span class="ref-name"> &mdash; University of Michigan: Consumer Sentiment</span>
+          </a>
+          <a href="https://fred.stlouisfed.org/series/DJIA" target="_blank">
+            <span class="ref-sid">DJIA</span>
+            <span class="ref-name"> &mdash; Dow Jones Industrial Average</span>
+          </a>
+          <a href="https://fred.stlouisfed.org/series/SP500" target="_blank">
+            <span class="ref-sid">SP500</span>
+            <span class="ref-name"> &mdash; S&amp;P 500</span>
+          </a>
+          <a href="https://fred.stlouisfed.org/series/NASDAQCOM" target="_blank">
+            <span class="ref-sid">NASDAQCOM</span>
+            <span class="ref-name"> &mdash; NASDAQ Composite Index</span>
+          </a>
+          <a href="https://fred.stlouisfed.org/series/DHHNGSP" target="_blank">
+            <span class="ref-sid">DHHNGSP</span>
+            <span class="ref-name"> &mdash; Henry Hub Natural Gas Spot Price</span>
+          </a>
+          <a href="https://fred.stlouisfed.org/series/WTISPLC" target="_blank">
+            <span class="ref-sid">WTISPLC</span>
+            <span class="ref-name"> &mdash; WTI Crude Oil Spot Price</span>
+          </a>
+        </div>
+
+        <h3>Useful Links</h3>
+        <div class="ref-series">
+          <a href="https://fred.stlouisfed.org/" target="_blank">FRED Home</a>
+          <a href="https://fred.stlouisfed.org/categories" target="_blank">Browse Categories</a>
+          <a href="https://fred.stlouisfed.org/tags" target="_blank">Browse Tags</a>
+          <a href="https://fred.stlouisfed.org/docs/api/fred/" target="_blank">API Documentation</a>
+        </div>
+      </div>
+
+      <div class="ref-footer">
+        <div class="ref-footer-scroll">
+          <details class="ref-api-panel" open>
+            <summary>API Key</summary>
+            <div class="options-stack" style="margin-top: 8px">
+              <div class="opt-group">
+                <label for="apiKeyInput">FRED API key</label>
+                <div style="display: flex; gap: 4px">
+                  <input
+                    id="apiKeyInput"
+                    type="password"
+                    placeholder="Paste your API key"
+                    style="flex: 1"
+                  />
+                  <button class="btn btn-primary btn-sm" type="button" onclick="saveFredApiKey()">
+                    Save
+                  </button>
+                </div>
+              </div>
+              <div
+                class="status-msg"
+                id="keyStatus"
+                style="text-align: left; padding: 4px 0 0"
+              ></div>
+            </div>
+          </details>
+
+          <button
+            class="btn btn-outline ref-export-btn"
+            type="button"
+            id="sourcesBtn"
+            onclick="loadSources()"
+          >
+            Export All FRED Sources to Sheet
+          </button>
+
+          <div class="cat-browser">
+            <h3>Browse categories</h3>
+            <p class="cat-hint">
+              Open depth-1 topics from the API root, then drill down. Series
+              export writes metadata (id, title, observation dates, frequency,
+              units, seasonal adjustment, last updated) to a sheet &mdash; not
+              full observation history. Large categories use multiple requests
+              (1000 series per call).
+            </p>
+            <div id="catBreadcrumb" class="cat-breadcrumb"></div>
+            <div class="cat-toolbar">
+              <button
+                type="button"
+                class="btn btn-outline btn-sm"
+                id="catBackBtn"
+                onclick="catGoBack()"
+              >
+                Back
+              </button>
+            </div>
+            <div class="cat-subhead">Subcategories</div>
+            <div id="catSubcatList" class="cat-list"></div>
+            <div class="cat-subhead">Series in this category</div>
+            <div id="catSeriesLine" class="cat-series-line"></div>
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              id="catExportBtn"
+              onclick="catExportSeries()"
+              style="width: 100%"
+            >
+              Export series list to sheet
+            </button>
+            <div id="catBrowserStatus" class="status-msg" style="text-align: left; margin-top: 6px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- SCRIPT                                                             -->
+    <!-- ================================================================== -->
+    <script>
+      // ---- Tab switching ----
+
+      var tabBtns = document.querySelectorAll(".tab-btn");
+      var tabPanels = document.querySelectorAll(".tab-panel");
+
+      for (var i = 0; i < tabBtns.length; i++) {
+        tabBtns[i].addEventListener("click", function () {
+          var target = this.getAttribute("data-tab");
+          for (var j = 0; j < tabBtns.length; j++) {
+            tabBtns[j].classList.remove("active");
+            tabPanels[j].classList.remove("active");
+          }
+          this.classList.add("active");
+          document.getElementById("tab-" + target).classList.add("active");
+          if (target === "reference") {
+            initReferenceTab();
+          }
+        });
+      }
+
+      // ---- Reference: API key & category browser ----
+
+      var catInited = false;
+      var catStack = [];
+      var catChildrenCache = {};
+      var catSeriesCountCache = {};
+
+      function initReferenceTab() {
+        google.script.run
+          .withSuccessHandler(function (st) {
+            var el = document.getElementById("keyStatus");
+            if (el && st && st.saved) {
+              el.textContent = "API key is saved.";
+              el.className = "status-msg success";
+            }
+          })
+          .fred_getApiKeyStatus();
+
+        if (!catInited) {
+          catInited = true;
+          catStack = [{ id: 0, name: "All categories" }];
+          catChildrenCache = {};
+          catSeriesCountCache = {};
+          refreshCategoryUI();
+        }
+      }
+
+      function refreshCategoryUI() {
+        var cur = catStack[catStack.length - 1];
+        renderCatBreadcrumb();
+        var backBtn = document.getElementById("catBackBtn");
+        if (backBtn) {
+          backBtn.style.display = catStack.length > 1 ? "inline-block" : "none";
+        }
+
+        var subEl = document.getElementById("catSubcatList");
+        var seriesEl = document.getElementById("catSeriesLine");
+        var statusEl = document.getElementById("catBrowserStatus");
+        if (statusEl) {
+          statusEl.textContent = "";
+          statusEl.className = "status-msg";
+        }
+        if (seriesEl) {
+          seriesEl.innerHTML = "";
+        }
+        if (!subEl) {
+          return;
+        }
+
+        subEl.innerHTML =
+          '<div class="status-msg"><span class="spinner"></span> Loading...</div>';
+
+        var cacheKey = String(cur.id);
+        if (catChildrenCache[cacheKey] !== undefined) {
+          renderCatSubcats(catChildrenCache[cacheKey], cur.id);
+          loadCatSeriesMeta(cur.id);
+          return;
+        }
+
+        google.script.run
+          .withSuccessHandler(function (res) {
+            var list = res.categories || [];
+            catChildrenCache[cacheKey] = list;
+            renderCatSubcats(list, cur.id);
+            loadCatSeriesMeta(cur.id);
+          })
+          .withFailureHandler(function (err) {
+            subEl.innerHTML =
+              '<div class="status-msg error">' +
+              escapeHtml(err.message) +
+              "</div>";
+          })
+          .fred_getCategoryChildren(cur.id);
+      }
+
+      function renderCatBreadcrumb() {
+        var el = document.getElementById("catBreadcrumb");
+        if (!el) {
+          return;
+        }
+        el.innerHTML = "";
+        for (var i = 0; i < catStack.length; i++) {
+          if (i > 0) {
+            el.appendChild(document.createTextNode(" \u203a "));
+          }
+          var span = document.createElement("span");
+          span.className = "crumb";
+          span.textContent = catStack[i].name;
+          (function (idx) {
+            span.onclick = function () {
+              catStack = catStack.slice(0, idx + 1);
+              refreshCategoryUI();
+            };
+          })(i);
+          el.appendChild(span);
+        }
+      }
+
+      function renderCatSubcats(list, leafCategoryId) {
+        var subEl = document.getElementById("catSubcatList");
+        if (!subEl) {
+          return;
+        }
+        subEl.innerHTML = "";
+        if (!list || list.length === 0) {
+          var empty = document.createElement("div");
+          empty.style.fontSize = "11px";
+          empty.style.color = "#80868b";
+          var lid =
+            leafCategoryId !== undefined && leafCategoryId !== null
+              ? String(leafCategoryId)
+              : "";
+          empty.textContent =
+            "No subcategories (leaf)" +
+            (lid ? ". Category id: " + lid : "") +
+            ".";
+          subEl.appendChild(empty);
+          return;
+        }
+        for (var i = 0; i < list.length; i++) {
+          (function (c) {
+            var btn = document.createElement("button");
+            btn.className = "cat-row";
+            btn.type = "button";
+            var nameSpan = document.createElement("span");
+            nameSpan.className = "cat-row-name";
+            nameSpan.textContent = c.name;
+            btn.appendChild(nameSpan);
+            btn.appendChild(document.createElement("br"));
+            var idSpan = document.createElement("span");
+            idSpan.className = "cat-row-id";
+            idSpan.textContent = "id " + c.id;
+            btn.appendChild(idSpan);
+            btn.onclick = function () {
+              catStack.push({ id: c.id, name: c.name });
+              refreshCategoryUI();
+            };
+            subEl.appendChild(btn);
+          })(list[i]);
+        }
+      }
+
+      function loadCatSeriesMeta(categoryId) {
+        var seriesEl = document.getElementById("catSeriesLine");
+        var exportBtn = document.getElementById("catExportBtn");
+        if (!seriesEl) {
+          return;
+        }
+        var sk = String(categoryId);
+        if (catSeriesCountCache[sk] !== undefined) {
+          var n = catSeriesCountCache[sk];
+          seriesEl.innerHTML =
+            "<strong>" +
+            n +
+            "</strong> series total" +
+            (n > 1000
+              ? " (export uses ~" + Math.ceil(n / 1000) + " API calls)"
+              : "");
+          if (exportBtn) {
+            exportBtn.disabled = n === 0;
+          }
+          return;
+        }
+        seriesEl.innerHTML = '<span class="spinner"></span> Counting...';
+        if (exportBtn) {
+          exportBtn.disabled = true;
+        }
+        google.script.run
+          .withSuccessHandler(function (meta) {
+            var n = meta.count != null ? meta.count : 0;
+            catSeriesCountCache[sk] = n;
+            seriesEl.innerHTML =
+              "<strong>" +
+              n +
+              "</strong> series total" +
+              (n > 1000
+                ? " (export uses ~" + Math.ceil(n / 1000) + " API calls)"
+                : "");
+            if (exportBtn) {
+              exportBtn.disabled = n === 0;
+            }
+          })
+          .withFailureHandler(function (err) {
+            seriesEl.innerHTML =
+              '<span style="color:#d93025">' +
+              escapeHtml(err.message) +
+              "</span>";
+            if (exportBtn) {
+              exportBtn.disabled = true;
+            }
+          })
+          .fred_getCategorySeriesMeta(categoryId);
+      }
+
+      function catGoBack() {
+        if (catStack.length <= 1) {
+          return;
+        }
+        catStack.pop();
+        refreshCategoryUI();
+      }
+
+      function catExportSeries() {
+        var cur = catStack[catStack.length - 1];
+        var btn = document.getElementById("catExportBtn");
+        var st = document.getElementById("catBrowserStatus");
+        if (btn) {
+          btn.disabled = true;
+        }
+        if (st) {
+          st.innerHTML =
+            '<span class="spinner"></span> Exporting (may take a while)...';
+          st.className = "status-msg";
+        }
+        google.script.run
+          .withSuccessHandler(function (res) {
+            if (btn) {
+              btn.disabled = false;
+            }
+            var sk = String(cur.id);
+            if (res && res.count != null) {
+              catSeriesCountCache[sk] = res.count;
+            }
+            if (st) {
+              st.textContent = (res && res.message) || "Done.";
+              st.className = "status-msg success";
+            }
+          })
+          .withFailureHandler(function (err) {
+            if (btn) {
+              btn.disabled = false;
+            }
+            if (st) {
+              st.textContent = err.message;
+              st.className = "status-msg error";
+            }
+          })
+          .fred_exportCategorySeriesToSheet(cur.id, cur.name);
+      }
+
+      function saveFredApiKey() {
+        var key = document.getElementById("apiKeyInput").value.trim();
+        var st = document.getElementById("keyStatus");
+        if (!key) {
+          st.textContent = "Please enter an API key.";
+          st.className = "status-msg error";
+          return;
+        }
+        google.script.run
+          .withSuccessHandler(function () {
+            document.getElementById("apiKeyInput").value = "";
+            st.textContent = "API key saved.";
+            st.className = "status-msg success";
+            if (catInited) {
+              catChildrenCache = {};
+              catSeriesCountCache = {};
+              refreshCategoryUI();
+            }
+          })
+          .withFailureHandler(function (e) {
+            st.textContent = e.message;
+            st.className = "status-msg error";
+          })
+          .fred_saveApiKey(key);
+      }
+
+      // ---- Options helpers ----
+
+      function getSearchOptions() {
+        var opts = {};
+        var units = document.getElementById("optUnits").value;
+        var freq = document.getElementById("optFreq").value;
+        var agg = document.getElementById("optAgg").value;
+        var start = document.getElementById("optStart").value;
+        var end = document.getElementById("optEnd").value;
+        if (units) opts.units = units;
+        if (freq) opts.frequency = freq;
+        if (agg) opts.aggregation_method = agg;
+        if (start) opts.observation_start = start;
+        if (end) opts.observation_end = end;
+        return opts;
+      }
+
+      function getQuickOptions() {
+        var opts = {};
+        var units = document.getElementById("qOptUnits").value;
+        var freq = document.getElementById("qOptFreq").value;
+        var agg = document.getElementById("qOptAgg").value;
+        var start = document.getElementById("qOptStart").value;
+        var end = document.getElementById("qOptEnd").value;
+        if (units) opts.units = units;
+        if (freq) opts.frequency = freq;
+        if (agg) opts.aggregation_method = agg;
+        if (start) opts.observation_start = start;
+        if (end) opts.observation_end = end;
+        return opts;
+      }
+
+      // ---- Search tab ----
+
+      var searchInput = document.getElementById("searchInput");
+      var searchBtn = document.getElementById("searchBtn");
+      var resultsArea = document.getElementById("resultsArea");
+
+      searchInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") doSearch();
+      });
+
+      function getSearchType() {
+        var radios = document.getElementsByName("searchType");
+        for (var i = 0; i < radios.length; i++) {
+          if (radios[i].checked) return radios[i].value;
+        }
+        return "full_text";
+      }
+
+      function doSearch() {
+        var text = searchInput.value.trim();
+        if (!text) return;
+
+        searchBtn.disabled = true;
+        resultsArea.innerHTML =
+          '<div class="status-msg"><span class="spinner"></span> Searching...</div>';
+
+        google.script.run
+          .withSuccessHandler(renderResults)
+          .withFailureHandler(function (err) {
+            resultsArea.innerHTML =
+              '<div class="status-msg error">' +
+              escapeHtml(err.message) +
+              "</div>";
+            searchBtn.disabled = false;
+          })
+          .fred_searchSeries(text, { limit: 25, search_type: getSearchType() });
+      }
+
+      function renderResults(series) {
+        searchBtn.disabled = false;
+
+        if (!series || series.length === 0) {
+          resultsArea.innerHTML =
+            '<div class="empty-state">No series found. Try different keywords.</div>';
+          return;
+        }
+
+        var label =
+          series.length >= 25
+            ? "Top " + series.length + " results"
+            : series.length + (series.length === 1 ? " result" : " results");
+
+        var html = '<div class="results-label">' + label + "</div>";
+        for (var i = 0; i < series.length; i++) {
+          html += buildCard(series[i]);
+        }
+        resultsArea.innerHTML = html;
+      }
+
+      function buildCard(s) {
+        var id = escapeHtml(s.id);
+        var title = escapeHtml(s.title);
+        var freq = escapeHtml(s.frequency_short || s.frequency || "");
+        var units = escapeHtml(s.units_short || s.units || "");
+        var pop = s.popularity || 0;
+
+        return (
+          '<div class="card">' +
+          '<div class="card-id">' + id + "</div>" +
+          '<div class="card-title">' + title + "</div>" +
+          '<div class="card-meta">' +
+          "<span>" + freq + "</span>" +
+          "<span>" + units + "</span>" +
+          "<span>Pop: " + pop + "</span>" +
+          "</div>" +
+          '<div class="card-actions">' +
+          '<button class="btn btn-primary btn-sm" ' +
+          "onclick=\"fetchSeries('" +
+          id +
+          "', '" +
+          title.replace(/'/g, "\\'") +
+          "')\">" +
+          "Fetch Data</button>" +
+          "</div>" +
+          "</div>"
+        );
+      }
+
+      function fetchSeries(seriesId, title) {
+        var card = event.target.closest(".card");
+        var btn = event.target;
+        btn.disabled = true;
+        btn.textContent = "Fetching...";
+
+        var opts = getSearchOptions();
+
+        google.script.run
+          .withSuccessHandler(function (msg) {
+            btn.textContent = "Done";
+            var notice = document.createElement("div");
+            notice.className = "status-msg success";
+            notice.textContent = msg;
+            card.appendChild(notice);
+            setTimeout(function () {
+              btn.disabled = false;
+              btn.textContent = "Fetch Data";
+            }, 3000);
+          })
+          .withFailureHandler(function (err) {
+            btn.disabled = false;
+            btn.textContent = "Fetch Data";
+            var notice = document.createElement("div");
+            notice.className = "status-msg error";
+            notice.textContent = err.message;
+            card.appendChild(notice);
+          })
+          .fred_fetchAndWriteSeries(seriesId, title, opts);
+      }
+
+      // ---- Quick Fetch tab ----
+
+      function quickFetch(seriesId, title, btn) {
+        btn.disabled = true;
+        btn.textContent = "...";
+
+        var opts = getQuickOptions();
+
+        google.script.run
+          .withSuccessHandler(function (msg) {
+            btn.textContent = "Done";
+            setTimeout(function () {
+              btn.disabled = false;
+              btn.textContent = "Fetch";
+            }, 2000);
+          })
+          .withFailureHandler(function (err) {
+            btn.disabled = false;
+            btn.textContent = "Fetch";
+            alert("Error: " + err.message);
+          })
+          .fred_fetchAndWriteSeries(seriesId, title, opts);
+      }
+
+      // ---- Reference tab ----
+
+      function loadSources() {
+        var btn = document.getElementById("sourcesBtn");
+        btn.disabled = true;
+        btn.textContent = "Exporting...";
+
+        google.script.run
+          .withSuccessHandler(function (msg) {
+            btn.textContent = "Done!";
+            setTimeout(function () {
+              btn.disabled = false;
+              btn.textContent = "Export All FRED Sources to Sheet";
+            }, 3000);
+          })
+          .withFailureHandler(function (err) {
+            btn.disabled = false;
+            btn.textContent = "Export All FRED Sources to Sheet";
+            alert("Error: " + err.message);
+          })
+          .fred_fetchFredSources();
+      }
+
+      // ---- Utilities ----
+
+      function escapeHtml(str) {
+        var div = document.createElement("div");
+        div.appendChild(document.createTextNode(str || ""));
+        return div.innerHTML;
+      }
+    </script>
+  </body>
+</html>

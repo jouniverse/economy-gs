@@ -1,0 +1,10 @@
+{
+  "scriptId": "<scriptId>",
+  "rootDir": "src",
+  "parentId": "<parentId>",
+  "scriptExtensions": [".js", ".gs"],
+  "htmlExtensions": [".html"],
+  "jsonExtensions": [".json"],
+  "filePushOrder": [],
+  "skipSubdirectories": false
+}

@@ -1,0 +1,1900 @@
+<!doctype html>
+<html>
+  <head>
+    <base target="_top" />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Google Sans", Roboto, Arial, sans-serif;
+        font-size: 13px;
+        color: #202124;
+        background: #f8f9fa;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      /* ---- Tabs ---- */
+
+      .tab-bar {
+        display: flex;
+        background: #fff;
+        border-bottom: 1px solid #dadce0;
+        flex-shrink: 0;
+      }
+
+      .tab-btn {
+        flex: 1;
+        padding: 10px 4px;
+        border: none;
+        background: none;
+        font-size: 12px;
+        font-weight: 500;
+        color: #5f6368;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition:
+          color 0.15s,
+          border-color 0.15s;
+      }
+
+      .tab-btn:hover {
+        color: #202124;
+      }
+
+      .tab-btn.active {
+        color: #4285f4;
+        border-bottom-color: #4285f4;
+      }
+
+      .tab-panel {
+        display: none;
+        flex: 1;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .tab-panel.active {
+        display: flex;
+      }
+
+      /* ---- Buttons ---- */
+
+      .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+
+      .btn-primary {
+        background: #4285f4;
+        color: #fff;
+      }
+
+      .btn-primary:hover {
+        background: #3367d6;
+      }
+
+      .btn-primary:disabled {
+        background: #a8c7fa;
+        cursor: default;
+      }
+
+      .btn-sm {
+        padding: 5px 12px;
+        font-size: 12px;
+      }
+
+      .btn-outline {
+        background: #fff;
+        color: #4285f4;
+        border: 1px solid #dadce0;
+      }
+
+      .btn-outline:hover {
+        background: #f0f4ff;
+      }
+
+      /* ---- Explorer tab ---- */
+
+      .explorer-scroll {
+        flex: 1;
+        overflow-y: auto;
+        padding: 12px 14px;
+      }
+
+      .section {
+        margin-bottom: 14px;
+      }
+
+      .section-label {
+        font-size: 11px;
+        font-weight: 500;
+        color: #5f6368;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+      }
+
+      /* Form Controls */
+      label {
+        display: block;
+        font-size: 12px;
+        font-weight: 500;
+        color: #3c4043;
+        margin-bottom: 3px;
+        margin-top: 10px;
+      }
+      label:first-child {
+        margin-top: 0;
+      }
+
+      select,
+      input[type="text"],
+      input[type="password"] {
+        width: 100%;
+        box-sizing: border-box;
+        font-size: 13px;
+        padding: 6px 8px;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        background: #fff;
+        outline: none;
+      }
+
+      select {
+        -webkit-appearance: auto;
+        appearance: auto;
+      }
+
+      select:hover {
+        background: #fff !important;
+        background-image: none !important;
+      }
+
+      select:focus,
+      input[type="text"]:focus,
+      input[type="password"]:focus {
+        border-color: #4285f4;
+        box-shadow: 0 0 0 1px #4285f4;
+      }
+
+      /* Radio/Checkbox groups */
+      .radio-group,
+      .check-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 12px;
+        margin-top: 3px;
+      }
+      .radio-group label,
+      .check-group label {
+        display: inline-flex;
+        align-items: center;
+        font-weight: 400;
+        margin: 0;
+        cursor: pointer;
+        font-size: 12px;
+      }
+      .radio-group input,
+      .check-group input {
+        -webkit-appearance: auto;
+        appearance: auto;
+        width: auto !important;
+        height: auto !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        margin-right: 4px !important;
+        border: initial !important;
+        box-shadow: none !important;
+        background: initial !important;
+        vertical-align: middle;
+      }
+
+      /* Searchable dropdown */
+      .search-select-wrapper {
+        position: relative;
+      }
+      .search-select-wrapper input[type="text"] {
+        padding-right: 24px;
+      }
+      .search-select-wrapper .dropdown-list {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        max-height: 180px;
+        overflow-y: auto;
+        background: #fff;
+        border: 1px solid #dadce0;
+        border-top: none;
+        border-radius: 0 0 4px 4px;
+        z-index: 100;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      }
+      .search-select-wrapper .dropdown-list.show {
+        display: block;
+      }
+      .dropdown-item {
+        padding: 6px 8px;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .dropdown-item:hover,
+      .dropdown-item.highlighted {
+        background: #e8f0fe;
+      }
+      .dropdown-item .item-id {
+        color: #5f6368;
+        font-size: 10px;
+        margin-left: 4px;
+      }
+
+      /* Options toggles */
+      .toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 8px;
+        font-size: 12px;
+      }
+      .toggle-row input[type="checkbox"] {
+        -webkit-appearance: checkbox;
+        appearance: auto;
+        width: auto !important;
+        height: auto !important;
+        padding: 0 !important;
+        border: initial !important;
+        box-shadow: none !important;
+        background: initial !important;
+      }
+
+      /* Warning box */
+      .warning-box {
+        background: #fef7e0;
+        border: 1px solid #f9ab00;
+        border-radius: 4px;
+        padding: 6px 8px;
+        font-size: 11px;
+        color: #8a6d00;
+        margin-top: 6px;
+        display: none;
+      }
+
+      /* Explorer bottom bar */
+      .explorer-actions {
+        padding: 10px 14px;
+        border-top: 1px solid #dadce0;
+        background: #fff;
+        flex-shrink: 0;
+      }
+
+      .fetch-btn {
+        width: 100%;
+        padding: 9px;
+        font-size: 13px;
+        font-weight: 500;
+        background: #4285f4;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+      .fetch-btn:hover {
+        background: #3367d6;
+      }
+      .fetch-btn:disabled {
+        background: #a8c7fa;
+        cursor: default;
+      }
+
+      .status-msg {
+        font-size: 12px;
+        padding: 4px 0 0;
+        text-align: center;
+      }
+      .status-msg.error {
+        color: #d93025;
+      }
+      .status-msg.success {
+        color: #188038;
+      }
+      .status-msg.loading {
+        color: #4285f4;
+      }
+
+      /* ---- Quick Fetch tab ---- */
+
+      .quick-section {
+        padding: 10px 12px;
+        overflow-y: auto;
+        flex: 1;
+      }
+
+      .quick-section-title {
+        font-size: 11px;
+        font-weight: 500;
+        color: #5f6368;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 10px 0 6px;
+      }
+
+      .quick-section-title:first-child {
+        margin-top: 0;
+      }
+
+      .quick-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .quick-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #fff;
+        border: 1px solid #dadce0;
+        border-radius: 6px;
+        padding: 7px 10px;
+        transition: box-shadow 0.15s;
+      }
+
+      .quick-item:hover {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .quick-item-info {
+        min-width: 0;
+      }
+
+      .quick-item-name {
+        font-size: 12px;
+        font-weight: 500;
+        color: #202124;
+      }
+
+      .quick-item-desc {
+        font-size: 11px;
+        color: #5f6368;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .quick-item .btn-sm {
+        flex-shrink: 0;
+        margin-left: 6px;
+      }
+
+      /* Quick Fetch options panel */
+      .options-panel {
+        background: #fff;
+        border-top: 1px solid #dadce0;
+        padding: 10px 12px;
+        flex-shrink: 0;
+      }
+
+      .options-panel summary {
+        font-size: 11px;
+        font-weight: 500;
+        color: #5f6368;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        user-select: none;
+        padding: 2px 0;
+      }
+
+      .options-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-top: 8px;
+      }
+
+      .opt-group label {
+        display: block;
+        font-size: 11px;
+        color: #5f6368;
+        margin-bottom: 2px;
+        margin-top: 0;
+      }
+
+      .opt-group select,
+      .opt-group input {
+        width: 100%;
+        padding: 5px 6px;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        font-size: 12px;
+        outline: none;
+      }
+
+      .opt-group select:focus,
+      .opt-group input:focus {
+        border-color: #4285f4;
+      }
+
+      .opt-row {
+        display: flex;
+        gap: 8px;
+      }
+
+      .opt-row .opt-group {
+        flex: 1;
+      }
+
+      /* ---- Reference tab ---- */
+
+      .ref-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: 12px;
+      }
+
+      .ref-area h3 {
+        font-size: 13px;
+        font-weight: 600;
+        margin: 14px 0 6px;
+      }
+
+      .ref-area h3:first-child {
+        margin-top: 0;
+      }
+
+      .ref-area p {
+        font-size: 12px;
+        color: #3c4043;
+        line-height: 1.5;
+        margin-bottom: 8px;
+      }
+
+      .ref-area ul {
+        font-size: 12px;
+        color: #3c4043;
+        line-height: 1.6;
+        margin: 0 0 10px 16px;
+        padding: 0;
+      }
+
+      .ref-area ul li {
+        margin-bottom: 2px;
+      }
+
+      .ref-links {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        margin-bottom: 10px;
+      }
+
+      .ref-links a {
+        font-size: 12px;
+        color: #4285f4;
+        text-decoration: none;
+        line-height: 1.4;
+      }
+
+      .ref-links a:hover {
+        text-decoration: underline;
+      }
+
+      .ref-table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 6px 0 12px;
+        font-size: 11px;
+      }
+
+      .ref-table th,
+      .ref-table td {
+        text-align: left;
+        padding: 4px 6px;
+        border: 1px solid #dadce0;
+      }
+
+      .ref-table th {
+        background: #f1f3f4;
+        font-weight: 600;
+      }
+
+      .ref-note {
+        background: #e8f0fe;
+        border-left: 3px solid #4285f4;
+        padding: 6px 10px;
+        margin: 8px 0;
+        font-size: 11px;
+        line-height: 1.5;
+        color: #3c4043;
+      }
+
+      code {
+        background: #f1f3f4;
+        padding: 1px 4px;
+        border-radius: 3px;
+        font-size: 11px;
+      }
+
+      /* ---- Spinner ---- */
+
+      .spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid #dadce0;
+        border-top-color: #4285f4;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        vertical-align: middle;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .spinner-lg {
+        display: none;
+        width: 20px;
+        height: 20px;
+        border: 2px solid #dadce0;
+        border-top-color: #4285f4;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 4px auto 0;
+      }
+
+      /* ---- Hidden helper ---- */
+
+      .hidden {
+        display: none !important;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Tab bar -->
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="explorer">Explorer</button>
+      <button class="tab-btn" data-tab="quick">Quick Fetch</button>
+      <button class="tab-btn" data-tab="reference">Reference</button>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- EXPLORER TAB                                                       -->
+    <!-- ================================================================== -->
+    <div class="tab-panel active" id="tab-explorer">
+      <div class="explorer-scroll">
+        <!-- ═══ Data Type ═══ -->
+        <div class="section">
+          <div class="section-label">Data Type</div>
+          <div class="radio-group">
+            <label
+              ><input
+                type="radio"
+                name="dataType"
+                value="C"
+                checked
+                onchange="onDataTypeChange()"
+              />
+              Goods</label
+            >
+            <label
+              ><input
+                type="radio"
+                name="dataType"
+                value="S"
+                onchange="onDataTypeChange()"
+              />
+              Services</label
+            >
+          </div>
+        </div>
+
+        <!-- ═══ Query Mode ═══ -->
+        <div class="section">
+          <div class="section-label">Query Mode</div>
+          <select id="queryMode" onchange="onModeChange()">
+            <option value="summary">Trade Summary</option>
+            <option value="balance">Trade Balance</option>
+            <option value="partners">Partner Breakdown</option>
+            <option value="products">Product Breakdown</option>
+            <option value="bilateral">Bilateral Trade</option>
+          </select>
+        </div>
+
+        <!-- ═══ Reporter ═══ -->
+        <div class="section">
+          <label for="reporterSearch">Reporter Country</label>
+          <div class="search-select-wrapper" id="reporterWrapper">
+            <input
+              type="text"
+              id="reporterSearch"
+              placeholder="Search country..."
+              autocomplete="off"
+              onfocus="openDropdown('reporter')"
+              oninput="filterDropdown('reporter')"
+            />
+            <div class="dropdown-list" id="reporterDropdown"></div>
+            <input type="hidden" id="reporterCode" />
+            <input type="hidden" id="reporterISO" />
+          </div>
+        </div>
+
+        <!-- ═══ Partner ═══ -->
+        <div class="section" id="partnerSection">
+          <label for="partnerSearch">Partner Country</label>
+          <div class="search-select-wrapper" id="partnerWrapper">
+            <input
+              type="text"
+              id="partnerSearch"
+              placeholder="Search country..."
+              autocomplete="off"
+              onfocus="openDropdown('partner')"
+              oninput="filterDropdown('partner')"
+            />
+            <div class="dropdown-list" id="partnerDropdown"></div>
+            <input type="hidden" id="partnerCode" value="0" />
+          </div>
+        </div>
+
+        <!-- ═══ Period ═══ -->
+        <div class="section">
+          <label>Period</label>
+          <div style="display: flex; gap: 8px; align-items: center">
+            <select id="periodFrom" style="flex: 1"></select>
+            <span style="font-size: 12px; color: #5f6368">to</span>
+            <select id="periodTo" style="flex: 1"></select>
+          </div>
+        </div>
+
+        <!-- ═══ Frequency ═══ -->
+        <div class="section">
+          <label>Frequency</label>
+          <div class="radio-group">
+            <label
+              ><input
+                type="radio"
+                name="freq"
+                value="A"
+                checked
+                onchange="onFreqChange()"
+              />
+              Annual</label
+            >
+            <label id="monthlyLabel"
+              ><input
+                type="radio"
+                name="freq"
+                value="M"
+                onchange="onFreqChange()"
+              />
+              Monthly</label
+            >
+          </div>
+          <div class="warning-box" id="freqWarning">
+            Monthly data can be large. Ensure you've selected a specific partner
+            and narrow period.
+          </div>
+        </div>
+
+        <!-- ═══ Trade Flow ═══ -->
+        <div class="section">
+          <label>Trade Flow</label>
+          <div class="check-group" id="flowChecks">
+            <label
+              ><input type="checkbox" name="flow" value="M" checked />
+              Import</label
+            >
+            <label
+              ><input type="checkbox" name="flow" value="X" checked />
+              Export</label
+            >
+            <label
+              ><input type="checkbox" name="flow" value="RM" /> Re-import</label
+            >
+            <label
+              ><input type="checkbox" name="flow" value="RX" /> Re-export</label
+            >
+          </div>
+        </div>
+
+        <!-- ═══ Classification ═══ -->
+        <div class="section" id="classificationSection">
+          <label for="classification">Classification</label>
+          <select
+            id="classification"
+            onchange="onClassificationChange()"
+          ></select>
+        </div>
+
+        <!-- ═══ Commodity Level ═══ -->
+        <div class="section" id="commoditySection">
+          <label for="commodityLevel">Commodity Level</label>
+          <select id="commodityLevel" onchange="onCommodityLevelChange()">
+            <option value="TOTAL">Total (All)</option>
+            <option value="AG2">2-digit Chapters</option>
+            <option value="AG4">4-digit Headings</option>
+            <option value="SPECIFIC">Specific Code(s)</option>
+          </select>
+          <div id="specificCodeSection" class="hidden">
+            <label for="specificCode">Commodity Code(s)</label>
+            <input type="text" id="specificCode" placeholder="e.g. 01,09,27" />
+          </div>
+          <div class="warning-box" id="commodityWarning"></div>
+        </div>
+
+        <!-- ═══ Options ═══ -->
+        <div class="section" id="optionsSection">
+          <div class="section-label">Options</div>
+          <div class="toggle-row" id="mirrorRow" class="hidden">
+            <span>Use Mirror Data (fallback)</span>
+            <input type="checkbox" id="useMirror" />
+          </div>
+          <div class="toggle-row">
+            <span>Include Descriptions</span>
+            <input type="checkbox" id="includeDesc" checked />
+          </div>
+        </div>
+      </div>
+
+      <!-- Explorer bottom bar -->
+      <div class="explorer-actions">
+        <button class="fetch-btn" id="fetchBtn" onclick="fetchData()" disabled>
+          Fetch Data
+        </button>
+        <div class="spinner-lg" id="spinner"></div>
+        <div class="status-msg" id="statusArea"></div>
+      </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- QUICK FETCH TAB                                                    -->
+    <!-- ================================================================== -->
+    <div class="tab-panel" id="tab-quick">
+      <div class="quick-section">
+        <!-- Country + Year selector -->
+        <div class="quick-section-title">Select Country &amp; Year</div>
+        <div style="margin-bottom: 12px">
+          <div class="search-select-wrapper" id="qReporterWrapper">
+            <input
+              type="text"
+              id="qReporterSearch"
+              placeholder="Search country..."
+              autocomplete="off"
+              onfocus="openDropdown('qReporter')"
+              oninput="filterDropdown('qReporter')"
+              style="margin-bottom: 6px"
+            />
+            <div class="dropdown-list" id="qReporterDropdown"></div>
+            <input type="hidden" id="qReporterCode" />
+            <input type="hidden" id="qReporterISO" />
+          </div>
+          <select id="qYear" style="margin-top: 2px"></select>
+        </div>
+
+        <!-- Goods section -->
+        <div class="quick-section-title">Goods</div>
+        <div class="quick-grid">
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-name">Trade Summary</div>
+              <div class="quick-item-desc">Total imports &amp; exports</div>
+            </div>
+            <button
+              class="btn btn-primary btn-sm"
+              onclick="quickFetch('summary', 'C', this)"
+            >
+              Fetch
+            </button>
+          </div>
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-name">Trade Balance</div>
+              <div class="quick-item-desc">Exports vs imports (World)</div>
+            </div>
+            <button
+              class="btn btn-primary btn-sm"
+              onclick="quickFetch('balance', 'C', this)"
+            >
+              Fetch
+            </button>
+          </div>
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-name">Top Partners</div>
+              <div class="quick-item-desc">
+                All trading partners with shares
+              </div>
+            </div>
+            <button
+              class="btn btn-primary btn-sm"
+              onclick="quickFetch('partners', 'C', this)"
+            >
+              Fetch
+            </button>
+          </div>
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-name">Top Products</div>
+              <div class="quick-item-desc">2-digit HS chapters with shares</div>
+            </div>
+            <button
+              class="btn btn-primary btn-sm"
+              onclick="quickFetch('products', 'C', this)"
+            >
+              Fetch
+            </button>
+          </div>
+        </div>
+
+        <!-- Services section -->
+        <div class="quick-section-title">Services</div>
+        <div class="quick-grid">
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-name">Services Summary</div>
+              <div class="quick-item-desc">
+                Total services imports &amp; exports
+              </div>
+            </div>
+            <button
+              class="btn btn-primary btn-sm"
+              onclick="quickFetch('summary', 'S', this)"
+            >
+              Fetch
+            </button>
+          </div>
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-name">Services Balance</div>
+              <div class="quick-item-desc">
+                Services exports vs imports (World)
+              </div>
+            </div>
+            <button
+              class="btn btn-primary btn-sm"
+              onclick="quickFetch('balance', 'S', this)"
+            >
+              Fetch
+            </button>
+          </div>
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-name">Services Partners</div>
+              <div class="quick-item-desc">Top services trading partners</div>
+            </div>
+            <button
+              class="btn btn-primary btn-sm"
+              onclick="quickFetch('partners', 'S', this)"
+            >
+              Fetch
+            </button>
+          </div>
+          <div class="quick-item">
+            <div class="quick-item-info">
+              <div class="quick-item-name">Services Categories</div>
+              <div class="quick-item-desc">Major EBOPS service categories</div>
+            </div>
+            <button
+              class="btn btn-primary btn-sm"
+              onclick="quickFetch('products', 'S', this)"
+            >
+              Fetch
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="options-panel" id="quickOptions">
+        <details>
+          <summary>Quick Fetch Options</summary>
+          <div class="options-stack">
+            <div class="opt-row">
+              <div class="opt-group">
+                <label for="qPartnerOpt">Partner</label>
+                <select id="qPartnerOpt">
+                  <option value="0">World (default)</option>
+                </select>
+              </div>
+              <div class="opt-group">
+                <label for="qFlowOpt">Flow</label>
+                <select id="qFlowOpt">
+                  <option value="M,X">Import + Export</option>
+                  <option value="M">Import only</option>
+                  <option value="X">Export only</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- REFERENCE TAB                                                      -->
+    <!-- ================================================================== -->
+    <div class="tab-panel" id="tab-reference">
+      <div class="ref-area">
+        <h3>About UN Comtrade</h3>
+        <p>
+          The
+          <a href="https://comtradeplus.un.org/" target="_blank"
+            >UN Comtrade Database</a
+          >
+          is the world&rsquo;s largest repository of international trade data,
+          maintained by the United Nations Statistics Division. It covers
+          merchandise (goods) trade from 1962 and services trade from over 200
+          countries and territories.
+        </p>
+        <p>
+          This add-on queries the
+          <a href="https://uncomtrade.org/docs/un-comtrade-api/" target="_blank"
+            >UN Comtrade API</a
+          >
+          for trade data. Select a
+          country, period, and analysis mode, then inject the results into a Google Sheet.
+        </p>
+
+        <h3>Query Modes</h3>
+        <table class="ref-table">
+          <tr>
+            <th>Mode</th>
+            <th>Description</th>
+          </tr>
+          <tr>
+            <td><strong>Trade Summary</strong></td>
+            <td>
+              Total trade value for one reporter against the World. Shows
+              aggregate import/export values per period.
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Trade Balance</strong></td>
+            <td>
+              Exports and imports side by side with a calculated balance column
+              (Exports &minus; Imports).
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Partners</strong></td>
+            <td>
+              Trade values by partner country with trade share percentages. The
+              &ldquo;World&rdquo; row shows the total.
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Products</strong></td>
+            <td>
+              Trade values by commodity code with unit values and shares. Use
+              2-digit for overview, 4-digit for detail.
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Bilateral</strong></td>
+            <td>
+              Commodity-level trade between two specific countries. Supports
+              mirror data fallback.
+            </td>
+          </tr>
+        </table>
+
+        <h3>Output Columns</h3>
+        <table class="ref-table">
+          <tr>
+            <th>Column</th>
+            <th>Notes</th>
+          </tr>
+          <tr>
+            <td>Trade Value (USD)</td>
+            <td>Value in US dollars as reported to UN</td>
+          </tr>
+          <tr>
+            <td>Net Weight (kg)</td>
+            <td>Only populated for specific commodities; 0 at TOTAL level</td>
+          </tr>
+          <tr>
+            <td>Unit Value (USD/kg)</td>
+            <td>Trade Value &divide; Net Weight; blank when weight is 0</td>
+          </tr>
+          <tr>
+            <td>Trade Share (%)</td>
+            <td>
+              Share within same period &amp; flow. World row excluded from
+              denominator in Partners mode.
+            </td>
+          </tr>
+          <tr>
+            <td>Trade Balance (USD)</td>
+            <td>Exports &minus; Imports. Positive = surplus.</td>
+          </tr>
+          <tr>
+            <td>YoY Growth (%)</td>
+            <td>Year-on-year change; requires &ge;2 periods selected</td>
+          </tr>
+          <tr>
+            <td>Data Source</td>
+            <td>
+              <code>reported</code> = reporter's data; <code>mirror</code> =
+              partner's data with flows flipped
+            </td>
+          </tr>
+        </table>
+
+        <h3>Classifications</h3>
+        <p><strong>Goods:</strong></p>
+        <ul>
+          <li>
+            <strong>HS</strong> (Harmonized System) &mdash; most common; revised
+            every 5 years (HS92 to HS22)
+          </li>
+          <li>
+            <strong>SITC</strong> &mdash; analytical classification by economic
+            function (since the 1950s)
+          </li>
+          <li>
+            <strong>BEC</strong> (Broad Economic Categories) &mdash; groups
+            products by end-use (capital, intermediate, consumer)
+          </li>
+        </ul>
+        <p><strong>Services:</strong></p>
+        <ul>
+          <li>
+            <strong>EBOPS 2010</strong> &mdash; current services classification
+          </li>
+          <li>
+            <strong>EBOPS 2002</strong> &mdash; older version, still used by
+            some countries
+          </li>
+          <li>
+            <strong>EBOPS (Combined)</strong> &mdash; merged; coverage varies
+          </li>
+        </ul>
+
+        <div class="ref-note">
+          <strong>Services data coverage</strong> is significantly sparser than
+          goods. Many countries do not report services trade. You may need to
+          try different classifications and commodity levels to find available
+          data.
+        </div>
+
+        <h3>Tips</h3>
+        <ul>
+          <li>
+            Start with <strong>Trade Summary</strong> to get the big picture,
+            then drill down with Partners or Products.
+          </li>
+          <li>
+            Use <strong>Annual</strong> frequency for most analyses; monthly is
+            goods only and produces many more rows.
+          </li>
+          <li>
+            For bilateral trade with smaller countries, enable
+            <strong>Mirror Data</strong> &mdash; the partner may report data
+            even if the reporter does not.
+          </li>
+          <li>
+            Set Partner to <strong>World</strong> for aggregate views. Avoid
+            &ldquo;All Partners + 4-digit products&rdquo; &mdash; this can hit
+            API record limits.
+          </li>
+          <li>
+            Each fetch creates a new sheet. Use the API key stored in Script
+            Properties to avoid re-entering it.
+          </li>
+          <li>
+            The free API tier allows 100k records per call. Use aggregate
+            commodity codes to stay within limits.
+          </li>
+        </ul>
+
+        <h3>Useful Links</h3>
+        <div class="ref-links">
+          <a href="https://comtradeplus.un.org/" target="_blank"
+            >UN Comtrade Database</a
+          >
+          <a href="https://comtradedeveloper.un.org/" target="_blank"
+            >UN Comtrade Developer Portal (API key)</a
+          >
+          <a href="https://uncomtrade.org/docs/un-comtrade-api/" target="_blank"
+            >API Documentation</a
+          >
+          <a
+            href="https://uncomtrade.org/docs/list-of-references-parameter-codes/"
+            target="_blank"
+            >List of References &amp; Parameter Codes</a
+          >
+          <a
+            href="https://unctadstat.unctad.org/datacentre/dataviewer/US.TradeMatrix"
+            target="_blank"
+            >UNCTAD Trade Matrix</a
+          >
+          <a
+            href="https://unstats.un.org/unsd/classifications/Econ"
+            target="_blank"
+            >UN Trade Classifications</a
+          >
+        </div>
+        <h3>Inject Reference Data</h3>
+        <p>
+          Inject UN Comtrade reference tables (classifications, country codes,
+          etc.) into a new sheet for lookup and analysis.
+        </p>
+      </div>
+
+      <div class="options-panel">
+        <details>
+          <summary>Reference Data</summary>
+          <div class="options-stack">
+            <div class="opt-group">
+              <label for="refSelect">Reference Table</label>
+              <select id="refSelect"></select>
+            </div>
+            <div style="display: flex; gap: 4px; align-items: center">
+              <button
+                class="btn btn-primary btn-sm"
+                id="refInjectBtn"
+                onclick="injectRef()"
+                style="flex-shrink: 0"
+              >
+                Inject to Sheet
+              </button>
+              <span
+                class="status-msg"
+                id="refStatus"
+                style="font-size: 11px; text-align: left"
+              ></span>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <div class="options-panel">
+        <details>
+          <summary>Live Data Updates</summary>
+          <div class="options-stack">
+            <p style="font-size: 11px; margin: 0; color: #666">
+              Fetch the latest data releases from UN Comtrade and inject into a
+              sheet. Shows which countries recently uploaded trade data.
+            </p>
+            <div style="display: flex; gap: 4px; align-items: center">
+              <button
+                class="btn btn-primary btn-sm"
+                id="liveUpdateBtn"
+                onclick="fetchLiveUpdates()"
+                style="flex-shrink: 0"
+              >
+                Fetch Latest Updates
+              </button>
+              <span
+                class="status-msg"
+                id="liveUpdateStatus"
+                style="font-size: 11px; text-align: left"
+              ></span>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <div class="options-panel">
+        <details>
+          <summary>API Key</summary>
+          <div class="options-stack">
+            <div class="opt-group">
+              <label for="apiKeyInput">Subscription Key</label>
+              <div style="display: flex; gap: 4px">
+                <input
+                  id="apiKeyInput"
+                  type="password"
+                  placeholder="Paste your API key"
+                  style="flex: 1"
+                />
+                <button class="btn btn-primary btn-sm" onclick="saveKey()">
+                  Save
+                </button>
+              </div>
+            </div>
+            <div
+              class="status-msg"
+              id="keyStatus"
+              style="text-align: left"
+            ></div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- SCRIPT                                                             -->
+    <!-- ================================================================== -->
+    <script>
+      // ---- Tab switching ----
+
+      var tabBtns = document.querySelectorAll(".tab-btn");
+      var tabPanels = document.querySelectorAll(".tab-panel");
+
+      for (var i = 0; i < tabBtns.length; i++) {
+        tabBtns[i].addEventListener("click", function () {
+          var target = this.getAttribute("data-tab");
+          for (var j = 0; j < tabBtns.length; j++) {
+            tabBtns[j].classList.remove("active");
+            tabPanels[j].classList.remove("active");
+          }
+          this.classList.add("active");
+          document.getElementById("tab-" + target).classList.add("active");
+        });
+      }
+
+      // ═══════════════════════════════════════════════════════════════════════
+      //  State
+      // ═══════════════════════════════════════════════════════════════════════
+
+      var reporters = [];
+      var partners = [];
+      var selectedReporter = null;
+      var selectedPartner = null;
+
+      // Mode → visibility rules
+      var MODE_CONFIG = {
+        summary: { partner: false, commodity: false, mirror: false },
+        balance: { partner: true, commodity: false, mirror: false },
+        partners: { partner: false, commodity: false, mirror: false },
+        products: { partner: true, commodity: true, mirror: false },
+        bilateral: { partner: true, commodity: true, mirror: true },
+      };
+
+      // ═══════════════════════════════════════════════════════════════════════
+      //  Initialization
+      // ═══════════════════════════════════════════════════════════════════════
+
+      document.addEventListener("DOMContentLoaded", init);
+
+      function init() {
+        populatePeriods();
+        populateQuickYear();
+        onModeChange();
+        loadClassifications();
+        loadReferenceCatalogue();
+
+        // Check API key status
+        google.script.run
+          .withSuccessHandler(function (result) {
+            if (result && result.saved) {
+              document.getElementById("fetchBtn").disabled = false;
+            }
+          })
+          .comtrade_getApiKeyStatus();
+
+        // Load reporters
+        setStatus("Loading metadata...", "loading");
+        google.script.run
+          .withSuccessHandler(function (data) {
+            reporters = data || [];
+            buildDropdownItems("reporter", reporters);
+            buildDropdownItems("qReporter", reporters);
+            // Now load partners
+            google.script.run
+              .withSuccessHandler(function (pData) {
+                partners = pData || [];
+                partners.unshift({
+                  id: "0",
+                  text: "World",
+                  iso3: "",
+                  isGroup: false,
+                });
+                buildDropdownItems("partner", partners);
+                populateQuickPartner(partners);
+                setStatus("", "");
+              })
+              .withFailureHandler(function (e) {
+                setStatus("Failed to load partners: " + e.message, "error");
+              })
+              .comtrade_getPartners();
+          })
+          .withFailureHandler(function (e) {
+            setStatus("Failed to load reporters: " + e.message, "error");
+          })
+          .comtrade_getReporters();
+
+        // Close dropdowns on outside click
+        document.addEventListener("click", function (e) {
+          if (!document.getElementById("reporterWrapper").contains(e.target)) {
+            closeDropdown("reporter");
+          }
+          if (!document.getElementById("partnerWrapper").contains(e.target)) {
+            closeDropdown("partner");
+          }
+          if (!document.getElementById("qReporterWrapper").contains(e.target)) {
+            closeDropdown("qReporter");
+          }
+        });
+      }
+
+      // ═══════════════════════════════════════════════════════════════════════
+      //  Period Dropdowns
+      // ═══════════════════════════════════════════════════════════════════════
+
+      function populatePeriods() {
+        var currentYear = new Date().getFullYear();
+        var fromSel = document.getElementById("periodFrom");
+        var toSel = document.getElementById("periodTo");
+        var defaultYear = currentYear - 1;
+
+        for (var y = currentYear; y >= 1962; y--) {
+          var opt1 = document.createElement("option");
+          opt1.value = y;
+          opt1.textContent = y;
+          if (y === defaultYear) opt1.selected = true;
+          fromSel.appendChild(opt1);
+
+          var opt2 = document.createElement("option");
+          opt2.value = y;
+          opt2.textContent = y;
+          if (y === defaultYear) opt2.selected = true;
+          toSel.appendChild(opt2);
+        }
+      }
+
+      function populateQuickYear() {
+        var currentYear = new Date().getFullYear();
+        var sel = document.getElementById("qYear");
+        var defaultYear = currentYear - 1;
+        for (var y = currentYear; y >= 2000; y--) {
+          var opt = document.createElement("option");
+          opt.value = y;
+          opt.textContent = y;
+          if (y === defaultYear) opt.selected = true;
+          sel.appendChild(opt);
+        }
+      }
+
+      function populateQuickPartner(list) {
+        var sel = document.getElementById("qPartnerOpt");
+        for (var i = 0; i < list.length; i++) {
+          if (list[i].id === "0") continue; // already have World
+          var opt = document.createElement("option");
+          opt.value = list[i].id;
+          opt.textContent = list[i].text;
+          sel.appendChild(opt);
+        }
+      }
+
+      function getPeriodString() {
+        var from = parseInt(document.getElementById("periodFrom").value, 10);
+        var to = parseInt(document.getElementById("periodTo").value, 10);
+        if (from > to) {
+          var tmp = from;
+          from = to;
+          to = tmp;
+        }
+        var periods = [];
+        for (var y = from; y <= to; y++) {
+          periods.push(String(y));
+        }
+        return periods.join(",");
+      }
+
+      // ═══════════════════════════════════════════════════════════════════════
+      //  Searchable Dropdowns
+      // ═══════════════════════════════════════════════════════════════════════
+
+      function buildDropdownItems(prefix, items) {
+        var list = document.getElementById(prefix + "Dropdown");
+        list.innerHTML = "";
+        for (var i = 0; i < items.length; i++) {
+          var div = document.createElement("div");
+          div.className = "dropdown-item";
+          div.dataset.id = items[i].id;
+          div.dataset.text = items[i].text;
+          div.dataset.iso3 = items[i].iso3 || "";
+          div.innerHTML =
+            escapeHtml(items[i].text) +
+            (items[i].iso3
+              ? ' <span class="item-id">' +
+                escapeHtml(items[i].iso3) +
+                "</span>"
+              : "") +
+            (items[i].isGroup ? ' <span class="item-id">[group]</span>' : "");
+          div.addEventListener(
+            "click",
+            (function (p, item) {
+              return function () {
+                selectDropdownItem(p, item);
+              };
+            })(prefix, items[i]),
+          );
+          list.appendChild(div);
+        }
+      }
+
+      function openDropdown(prefix) {
+        document.getElementById(prefix + "Dropdown").classList.add("show");
+        filterDropdown(prefix);
+      }
+
+      function closeDropdown(prefix) {
+        document.getElementById(prefix + "Dropdown").classList.remove("show");
+      }
+
+      function filterDropdown(prefix) {
+        var input = document.getElementById(prefix + "Search");
+        var query = input.value.toLowerCase();
+        var list = document.getElementById(prefix + "Dropdown");
+        var items = list.querySelectorAll(".dropdown-item");
+        for (var i = 0; i < items.length; i++) {
+          var text = items[i].dataset.text.toLowerCase();
+          var iso = (items[i].dataset.iso3 || "").toLowerCase();
+          var match = text.indexOf(query) !== -1 || iso.indexOf(query) !== -1;
+          items[i].style.display = match ? "" : "none";
+        }
+      }
+
+      function selectDropdownItem(prefix, item) {
+        document.getElementById(prefix + "Search").value = item.text;
+        document.getElementById(prefix + "Code").value = item.id;
+        if (prefix === "reporter") {
+          selectedReporter = item;
+          document.getElementById("reporterISO").value = item.iso3 || "";
+        } else if (prefix === "qReporter") {
+          document.getElementById("qReporterISO").value = item.iso3 || "";
+        } else {
+          selectedPartner = item;
+        }
+        closeDropdown(prefix);
+        checkFetchReady();
+      }
+
+      // ═══════════════════════════════════════════════════════════════════════
+      //  Mode / Data Type / Classification Changes
+      // ═══════════════════════════════════════════════════════════════════════
+
+      function onModeChange() {
+        var mode = document.getElementById("queryMode").value;
+        var cfg = MODE_CONFIG[mode];
+
+        toggle("partnerSection", cfg.partner);
+        toggle("commoditySection", cfg.commodity);
+        toggle("mirrorRow", cfg.mirror);
+
+        if (!cfg.partner) {
+          if (mode === "partners") {
+            document.getElementById("partnerCode").value = "";
+            document.getElementById("partnerSearch").value = "";
+          } else {
+            document.getElementById("partnerCode").value = "0";
+            document.getElementById("partnerSearch").value = "World";
+          }
+        }
+
+        checkFetchReady();
+      }
+
+      function onDataTypeChange() {
+        var dt = getSelectedRadio("dataType");
+
+        if (dt === "S") {
+          document.querySelector('input[name="freq"][value="A"]').checked =
+            true;
+          document.getElementById("monthlyLabel").classList.add("hidden");
+        } else {
+          document.getElementById("monthlyLabel").classList.remove("hidden");
+        }
+
+        updateCommodityLabels(dt);
+        loadClassifications();
+      }
+
+      function updateCommodityLabels(dt) {
+        var sel = document.getElementById("commodityLevel");
+        var opts = sel.options;
+        var inp = document.getElementById("specificCode");
+        if (dt === "S") {
+          opts[0].textContent = "Total (All Services)";
+          opts[1].textContent = "Major Categories";
+          opts[2].textContent = "Sub-categories";
+          inp.placeholder = "e.g. 1,3,10.1";
+        } else {
+          opts[0].textContent = "Total (All)";
+          opts[1].textContent = "2-digit Chapters";
+          opts[2].textContent = "4-digit Headings";
+          inp.placeholder = "e.g. 01,09,27";
+        }
+      }
+
+      function loadClassifications() {
+        var dt = getSelectedRadio("dataType");
+        google.script.run
+          .withSuccessHandler(function (cls) {
+            var sel = document.getElementById("classification");
+            sel.innerHTML = "";
+            for (var i = 0; i < cls.length; i++) {
+              var opt = document.createElement("option");
+              opt.value = cls[i].code;
+              opt.textContent = cls[i].label;
+              sel.appendChild(opt);
+            }
+          })
+          .comtrade_getClassifications(dt);
+      }
+
+      function onClassificationChange() {}
+
+      function onCommodityLevelChange() {
+        var level = document.getElementById("commodityLevel").value;
+        toggle("specificCodeSection", level === "SPECIFIC");
+
+        var warn = document.getElementById("commodityWarning");
+        if (level === "AG4") {
+          warn.textContent =
+            "Note: 4-digit level returns ~1,200 rows per period/flow. Ensure partner is specific or World.";
+          warn.style.display = "block";
+        } else {
+          warn.style.display = "none";
+        }
+
+        checkFetchReady();
+      }
+
+      function onFreqChange() {
+        var freq = getSelectedRadio("freq");
+        var warn = document.getElementById("freqWarning");
+        warn.style.display = freq === "M" ? "block" : "none";
+      }
+
+      // ═══════════════════════════════════════════════════════════════════════
+      //  API Key
+      // ═══════════════════════════════════════════════════════════════════════
+
+      function saveKey() {
+        var key = document.getElementById("apiKeyInput").value.trim();
+        if (!key) {
+          document.getElementById("keyStatus").textContent =
+            "Please enter an API key.";
+          document.getElementById("keyStatus").className = "status-msg error";
+          return;
+        }
+
+        google.script.run
+          .withSuccessHandler(function () {
+            document.getElementById("fetchBtn").disabled = false;
+            document.getElementById("apiKeyInput").value = "";
+            document.getElementById("keyStatus").textContent = "API key saved.";
+            document.getElementById("keyStatus").className =
+              "status-msg success";
+          })
+          .withFailureHandler(function (e) {
+            document.getElementById("keyStatus").textContent = e.message;
+            document.getElementById("keyStatus").className = "status-msg error";
+          })
+          .comtrade_saveApiKey(key);
+      }
+
+      // ═══════════════════════════════════════════════════════════════════════
+      //  Fetch Data (Explorer)
+      // ═══════════════════════════════════════════════════════════════════════
+
+      function checkFetchReady() {
+        var btn = document.getElementById("fetchBtn");
+        var reporter = document.getElementById("reporterCode").value;
+        var mode = document.getElementById("queryMode").value;
+
+        var ready = !!reporter;
+
+        if (mode === "bilateral") {
+          var partner = document.getElementById("partnerCode").value;
+          if (!partner || partner === "0") ready = false;
+        }
+
+        var flows = getCheckedFlows();
+        if (flows.length === 0) ready = false;
+
+        btn.disabled = !ready;
+      }
+
+      function fetchData() {
+        var mode = document.getElementById("queryMode").value;
+        var cmdCode;
+
+        if (MODE_CONFIG[mode].commodity) {
+          var level = document.getElementById("commodityLevel").value;
+          if (level === "SPECIFIC") {
+            cmdCode = document.getElementById("specificCode").value.trim();
+            if (!cmdCode) {
+              setStatus("Please enter commodity code(s).", "error");
+              return;
+            }
+          } else {
+            cmdCode = level;
+          }
+        } else {
+          cmdCode = "TOTAL";
+        }
+
+        var params = {
+          mode: mode,
+          typeCode: getSelectedRadio("dataType"),
+          freqCode: getSelectedRadio("freq"),
+          clCode: document.getElementById("classification").value,
+          reporterCode: document.getElementById("reporterCode").value,
+          reporterISO: document.getElementById("reporterISO").value || "",
+          partnerCode: document.getElementById("partnerCode").value || "0",
+          period: getPeriodString(),
+          flowCode: getCheckedFlows().join(","),
+          cmdCode: cmdCode,
+          includeDesc: document.getElementById("includeDesc").checked,
+          useMirror: document.getElementById("useMirror").checked,
+        };
+
+        document.getElementById("fetchBtn").disabled = true;
+        document.getElementById("spinner").style.display = "block";
+        setStatus("Fetching data from UN Comtrade...", "loading");
+
+        google.script.run
+          .withSuccessHandler(function (result) {
+            document.getElementById("spinner").style.display = "none";
+            document.getElementById("fetchBtn").disabled = false;
+            if (result && result.sheetName) {
+              setStatus(
+                result.rowCount + ' rows \u2192 "' + result.sheetName + '"',
+                "success",
+              );
+            } else {
+              setStatus("Done.", "success");
+            }
+          })
+          .withFailureHandler(function (e) {
+            document.getElementById("spinner").style.display = "none";
+            document.getElementById("fetchBtn").disabled = false;
+            setStatus(e.message || "An error occurred.", "error");
+          })
+          .comtrade_runComtradeFetch(params);
+      }
+
+      // ═══════════════════════════════════════════════════════════════════════
+      //  Quick Fetch
+      // ═══════════════════════════════════════════════════════════════════════
+
+      function quickFetch(mode, typeCode, btn) {
+        var reporterCode = document.getElementById("qReporterCode").value;
+        var reporterISO = document.getElementById("qReporterISO").value || "";
+        var year = document.getElementById("qYear").value;
+
+        if (!reporterCode) {
+          alert("Please select a country first.");
+          return;
+        }
+
+        var flow = document.getElementById("qFlowOpt").value;
+        var partner = document.getElementById("qPartnerOpt").value;
+
+        // Pick sensible defaults per mode
+        var clCode = typeCode === "S" ? "EB10" : "HS";
+        var cmdCode;
+        switch (mode) {
+          case "summary":
+          case "balance":
+          case "partners":
+            cmdCode = "TOTAL";
+            break;
+          case "products":
+            cmdCode = "AG2";
+            break;
+        }
+
+        // Override partner for modes that need it
+        var partnerCode;
+        switch (mode) {
+          case "summary":
+            partnerCode = "0";
+            break;
+          case "balance":
+            partnerCode = partner;
+            break;
+          case "partners":
+            partnerCode = "";
+            break;
+          case "products":
+            partnerCode = partner;
+            break;
+        }
+
+        var params = {
+          mode: mode,
+          typeCode: typeCode,
+          freqCode: "A",
+          clCode: clCode,
+          reporterCode: reporterCode,
+          reporterISO: reporterISO,
+          partnerCode: partnerCode,
+          period: year,
+          flowCode: flow,
+          cmdCode: cmdCode,
+          includeDesc: true,
+          useMirror: false,
+        };
+
+        btn.disabled = true;
+        btn.textContent = "...";
+
+        google.script.run
+          .withSuccessHandler(function (result) {
+            btn.textContent = "Done";
+            setTimeout(function () {
+              btn.disabled = false;
+              btn.textContent = "Fetch";
+            }, 2000);
+          })
+          .withFailureHandler(function (err) {
+            btn.disabled = false;
+            btn.textContent = "Fetch";
+            alert("Error: " + err.message);
+          })
+          .comtrade_runComtradeFetch(params);
+      }
+
+      // ═══════════════════════════════════════════════════════════════════════
+      //  Reference Data Injection
+      // ═══════════════════════════════════════════════════════════════════════
+
+      function loadReferenceCatalogue() {
+        google.script.run
+          .withSuccessHandler(function (cat) {
+            var sel = document.getElementById("refSelect");
+            sel.innerHTML = "";
+
+            var grpCl = document.createElement("optgroup");
+            grpCl.label = "Product Classifications";
+            for (var i = 0; i < cat.classifications.length; i++) {
+              var opt = document.createElement("option");
+              opt.value = cat.classifications[i].code;
+              opt.textContent = cat.classifications[i].label;
+              grpCl.appendChild(opt);
+            }
+            sel.appendChild(grpCl);
+
+            var grpRef = document.createElement("optgroup");
+            grpRef.label = "Other Reference Data";
+            for (var i = 0; i < cat.references.length; i++) {
+              var opt = document.createElement("option");
+              opt.value = cat.references[i].code;
+              opt.textContent = cat.references[i].label;
+              grpRef.appendChild(opt);
+            }
+            sel.appendChild(grpRef);
+          })
+          .withFailureHandler(function (e) {
+            var sel = document.getElementById("refSelect");
+            sel.innerHTML = '<option value="">Failed to load catalogue</option>';
+          })
+          .comtrade_getReferenceCatalogue();
+      }
+
+      function injectRef() {
+        var code = document.getElementById("refSelect").value;
+        if (!code) return;
+
+        var btn = document.getElementById("refInjectBtn");
+        var status = document.getElementById("refStatus");
+        btn.disabled = true;
+        btn.textContent = "Loading...";
+        status.textContent = "";
+        status.className = "status-msg";
+
+        google.script.run
+          .withSuccessHandler(function (result) {
+            btn.disabled = false;
+            btn.textContent = "Inject to Sheet";
+            status.textContent =
+              result.rowCount + ' rows → "' + result.sheetName + '"';
+            status.className = "status-msg success";
+          })
+          .withFailureHandler(function (e) {
+            btn.disabled = false;
+            btn.textContent = "Inject to Sheet";
+            status.textContent = e.message || "An error occurred.";
+            status.className = "status-msg error";
+          })
+          .comtrade_injectReferenceData(code);
+      }
+
+      function fetchLiveUpdates() {
+        var btn = document.getElementById("liveUpdateBtn");
+        var status = document.getElementById("liveUpdateStatus");
+        btn.disabled = true;
+        btn.textContent = "Loading...";
+        status.textContent = "";
+        status.className = "status-msg";
+
+        google.script.run
+          .withSuccessHandler(function (result) {
+            btn.disabled = false;
+            btn.textContent = "Fetch Latest Updates";
+            status.textContent =
+              result.rowCount + ' updates → "' + result.sheetName + '"';
+            status.className = "status-msg success";
+          })
+          .withFailureHandler(function (e) {
+            btn.disabled = false;
+            btn.textContent = "Fetch Latest Updates";
+            status.textContent = e.message || "An error occurred.";
+            status.className = "status-msg error";
+          })
+          .comtrade_fetchLiveUpdates();
+      }
+
+      // ═══════════════════════════════════════════════════════════════════════
+      //  Cache
+      // ═══════════════════════════════════════════════════════════════════════
+
+      function clearCache() {
+        google.script.run
+          .withSuccessHandler(function () {
+            setStatus("Cache cleared.", "success");
+          })
+          .withFailureHandler(function (e) {
+            setStatus(e.message, "error");
+          })
+          .comtrade_clearMetadataCache();
+      }
+
+      // ═══════════════════════════════════════════════════════════════════════
+      //  Helpers
+      // ═══════════════════════════════════════════════════════════════════════
+
+      function getSelectedRadio(name) {
+        var radios = document.querySelectorAll('input[name="' + name + '"]');
+        for (var i = 0; i < radios.length; i++) {
+          if (radios[i].checked) return radios[i].value;
+        }
+        return "";
+      }
+
+      function getCheckedFlows() {
+        var checks = document.querySelectorAll('input[name="flow"]');
+        var vals = [];
+        for (var i = 0; i < checks.length; i++) {
+          if (checks[i].checked) vals.push(checks[i].value);
+        }
+        return vals;
+      }
+
+      function toggle(id, show) {
+        var el = document.getElementById(id);
+        if (el) {
+          if (show) el.classList.remove("hidden");
+          else el.classList.add("hidden");
+        }
+      }
+
+      function setStatus(msg, type) {
+        var el = document.getElementById("statusArea");
+        el.textContent = msg;
+        el.className = "status-msg" + (type ? " " + type : "");
+      }
+
+      function escapeHtml(text) {
+        var div = document.createElement("div");
+        div.appendChild(document.createTextNode(text));
+        return div.innerHTML;
+      }
+    </script>
+  </body>
+</html>

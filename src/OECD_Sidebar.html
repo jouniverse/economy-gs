@@ -1,0 +1,1463 @@
+<!doctype html>
+<html>
+  <head>
+    <base target="_top" />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Google Sans", Roboto, Arial, sans-serif;
+        font-size: 13px;
+        color: #202124;
+        background: #f8f9fa;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      /* ---- Tabs ---- */
+
+      .tab-bar {
+        display: flex;
+        background: #fff;
+        border-bottom: 1px solid #dadce0;
+        flex-shrink: 0;
+      }
+
+      .tab-btn {
+        flex: 1;
+        padding: 10px 4px;
+        border: none;
+        background: none;
+        font-size: 12px;
+        font-weight: 500;
+        color: #5f6368;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition:
+          color 0.15s,
+          border-color 0.15s;
+      }
+
+      .tab-btn:hover {
+        color: #202124;
+      }
+
+      .tab-btn.active {
+        color: #4285f4;
+        border-bottom-color: #4285f4;
+      }
+
+      .tab-panel {
+        display: none;
+        flex: 1;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .tab-panel.active {
+        display: flex;
+      }
+
+      /* ---- Buttons ---- */
+
+      .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+
+      .btn-primary {
+        background: #4285f4;
+        color: #fff;
+      }
+
+      .btn-primary:hover {
+        background: #3367d6;
+      }
+
+      .btn-primary:disabled {
+        background: #a8c7fa;
+        cursor: default;
+      }
+
+      .btn-sm {
+        padding: 5px 12px;
+        font-size: 12px;
+      }
+
+      .btn-outline {
+        background: #fff;
+        color: #4285f4;
+        border: 1px solid #dadce0;
+      }
+
+      .btn-outline:hover {
+        background: #f0f4ff;
+      }
+
+      /* ---- Explorer tab ---- */
+
+      .search-bar {
+        display: flex;
+        gap: 6px;
+        padding: 10px 12px 8px;
+        background: #fff;
+        border-bottom: 1px solid #dadce0;
+        flex-shrink: 0;
+      }
+
+      .search-bar input {
+        flex: 1;
+        padding: 8px 10px;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        font-size: 13px;
+        outline: none;
+        transition: border-color 0.15s;
+      }
+
+      .search-bar input:focus {
+        border-color: #4285f4;
+      }
+
+      /* ---- Results / Dataset list ---- */
+
+      .results-area {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 8px 12px;
+      }
+
+      .results-label {
+        font-size: 11px;
+        font-weight: 500;
+        color: #5f6368;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+      }
+
+      .card {
+        background: #fff;
+        border: 1px solid #dadce0;
+        border-radius: 8px;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+        transition: box-shadow 0.15s;
+        cursor: pointer;
+      }
+
+      .card:hover {
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+      }
+
+      .card.selected {
+        border-color: #4285f4;
+        box-shadow: 0 0 0 1px #4285f4;
+      }
+
+      .card-id {
+        font-family: "Roboto Mono", monospace;
+        font-size: 10px;
+        font-weight: 600;
+        color: #4285f4;
+        word-break: break-all;
+        overflow-wrap: break-word;
+        line-height: 1.3;
+      }
+
+      .card-title {
+        font-size: 12px;
+        font-weight: 500;
+        margin: 3px 0;
+        line-height: 1.3;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+      }
+
+      .card-meta {
+        font-size: 11px;
+        color: #5f6368;
+      }
+
+      .card-meta span + span::before {
+        content: " \00b7  ";
+      }
+
+      .status-msg {
+        font-size: 12px;
+        padding: 6px 0;
+        text-align: center;
+      }
+
+      .status-msg.error {
+        color: #d93025;
+      }
+
+      .status-msg.success {
+        color: #188038;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 32px 16px;
+        color: #80868b;
+      }
+
+      .empty-state .icon {
+        font-size: 32px;
+        margin-bottom: 8px;
+      }
+
+      /* ---- Dimension selectors (Explorer) ---- */
+
+      .dim-panel {
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+        flex: 1;
+      }
+
+      .dim-panel.active {
+        display: flex;
+      }
+
+      .dim-header {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        background: #fff;
+        border-bottom: 1px solid #dadce0;
+        flex-shrink: 0;
+        gap: 8px;
+      }
+
+      .dim-header .back-btn {
+        background: none;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        color: #5f6368;
+        padding: 0 4px;
+        line-height: 1;
+      }
+
+      .dim-header .dataset-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #4285f4;
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .dim-scroll {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px 12px;
+      }
+
+      .dim-group {
+        margin-bottom: 10px;
+      }
+
+      .dim-group label {
+        display: block;
+        font-size: 11px;
+        font-weight: 500;
+        color: #5f6368;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+      }
+
+      .dim-group select {
+        width: 100%;
+        padding: 6px 8px;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        font-size: 12px;
+        outline: none;
+        max-height: 120px;
+      }
+
+      .dim-group select:focus {
+        border-color: #4285f4;
+      }
+
+      .dim-group input {
+        width: 100%;
+        padding: 6px 8px;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        font-size: 12px;
+        outline: none;
+      }
+
+      .dim-group input:focus {
+        border-color: #4285f4;
+      }
+
+      .dim-hint {
+        font-size: 10px;
+        color: #80868b;
+        margin-top: 2px;
+      }
+
+      .dim-actions {
+        padding: 10px 12px;
+        background: #fff;
+        border-top: 1px solid #dadce0;
+        flex-shrink: 0;
+      }
+
+      .dim-actions .btn {
+        width: 100%;
+      }
+
+      /* ---- Options panel ---- */
+
+      .options-panel {
+        background: #fff;
+        border-top: 1px solid #dadce0;
+        padding: 10px 12px;
+        flex-shrink: 0;
+      }
+
+      .options-panel summary {
+        font-size: 11px;
+        font-weight: 500;
+        color: #5f6368;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        user-select: none;
+        padding: 2px 0;
+      }
+
+      .options-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-top: 8px;
+      }
+
+      .opt-group label {
+        display: block;
+        font-size: 11px;
+        color: #5f6368;
+        margin-bottom: 2px;
+      }
+
+      .opt-group select,
+      .opt-group input {
+        width: 100%;
+        padding: 5px 6px;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        font-size: 12px;
+        outline: none;
+      }
+
+      .opt-group select:focus,
+      .opt-group input:focus {
+        border-color: #4285f4;
+      }
+
+      .opt-row {
+        display: flex;
+        gap: 8px;
+      }
+
+      .opt-row .opt-group {
+        flex: 1;
+      }
+
+      /* ---- Quick Fetch tab ---- */
+
+      .quick-section {
+        padding: 10px 12px;
+        overflow-y: auto;
+        flex: 1;
+      }
+
+      .quick-section-title {
+        font-size: 11px;
+        font-weight: 500;
+        color: #5f6368;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 10px 0 6px;
+      }
+
+      .quick-section-title:first-child {
+        margin-top: 0;
+      }
+
+      .quick-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .quick-item {
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+        border: 1px solid #dadce0;
+        border-radius: 6px;
+        padding: 7px 10px;
+        transition: box-shadow 0.15s;
+      }
+
+      .quick-item:hover {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .quick-item-info {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .quick-item-name {
+        font-size: 12px;
+        font-weight: 500;
+        color: #202124;
+      }
+
+      .quick-item-dataset {
+        font-family: "Roboto Mono", monospace;
+        font-size: 10px;
+        color: #5f6368;
+        word-break: break-all;
+        overflow-wrap: break-word;
+        line-height: 1.3;
+      }
+
+      .quick-item .btn-sm {
+        flex-shrink: 0;
+        margin-left: 6px;
+      }
+
+      /* ---- Reference tab ---- */
+
+      .ref-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: 12px;
+      }
+
+      .ref-area h3 {
+        font-size: 13px;
+        font-weight: 600;
+        margin: 14px 0 6px;
+      }
+
+      .ref-area h3:first-child {
+        margin-top: 0;
+      }
+
+      .ref-area p {
+        font-size: 12px;
+        color: #3c4043;
+        line-height: 1.5;
+        margin-bottom: 8px;
+      }
+
+      .ref-series {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        margin-bottom: 10px;
+      }
+
+      .ref-series a {
+        font-size: 12px;
+        color: #4285f4;
+        text-decoration: none;
+        line-height: 1.4;
+      }
+
+      .ref-series a:hover {
+        text-decoration: underline;
+      }
+
+      .ref-actions {
+        padding: 10px 12px;
+        border-top: 1px solid #dadce0;
+        background: #fff;
+        flex-shrink: 0;
+      }
+
+      .ref-actions .btn {
+        width: 100%;
+      }
+
+      /* ---- Quick Fetch collapsible detail ---- */
+
+      .quick-item details {
+        margin-top: 6px;
+        border-top: 1px solid #dadce0;
+        padding-top: 4px;
+      }
+
+      .quick-item details summary {
+        font-size: 11px;
+        color: #8d8b8b;
+        cursor: pointer;
+        font-weight: 500;
+        list-style: none;
+        outline: none;
+      }
+
+      .quick-item details summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .quick-item details summary::before {
+        content: "\25B6 ";
+      }
+
+      .quick-item details[open] summary::before {
+        content: "\25BC ";
+      }
+
+      .quick-item details summary:hover {
+        text-decoration: underline;
+      }
+
+      .quick-detail-row {
+        font-size: 10px;
+        color: #3c4043;
+        line-height: 1.5;
+        font-family: "Roboto Mono", monospace;
+      }
+
+      .quick-detail-row .dim-label {
+        color: #5f6368;
+        font-family: "Google Sans", Roboto, Arial, sans-serif;
+      }
+
+      /* ---- Spinner ---- */
+
+      .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #dadce0;
+        border-top-color: #4285f4;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        vertical-align: middle;
+        margin-right: 4px;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Tab bar -->
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="explorer">Explorer</button>
+      <button class="tab-btn" data-tab="quick">Quick Fetch</button>
+      <button class="tab-btn" data-tab="reference">Reference</button>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- EXPLORER TAB                                                       -->
+    <!-- ================================================================== -->
+    <div class="tab-panel active" id="tab-explorer">
+      <!-- Step 1: Search datasets -->
+      <div
+        id="explorerSearch"
+        style="display: flex; flex-direction: column; overflow: hidden; flex: 1"
+      >
+        <div class="search-bar">
+          <input
+            id="searchInput"
+            type="text"
+            placeholder="Search OECD datasets..."
+          />
+          <button id="searchBtn" class="btn btn-primary" onclick="doSearch()">
+            Search
+          </button>
+        </div>
+
+        <div class="results-area" id="resultsArea">
+          <div class="empty-state">
+            <div class="icon">&#x1F30D;</div>
+            <div>Search over 1,400 OECD datasets by keyword or ID</div>
+            <button
+              class="btn btn-outline btn-sm"
+              style="margin-top: 12px; width: 100%"
+              onclick="doBrowseAll()"
+            >
+              Browse All Datasets
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Dimension selection (hidden until a dataset is chosen) -->
+      <div class="dim-panel" id="dimPanel">
+        <div class="dim-header">
+          <button class="back-btn" onclick="backToSearch()">&larr;</button>
+          <span class="dataset-label" id="dimDatasetLabel"></span>
+        </div>
+        <div class="dim-scroll" id="dimScroll">
+          <div class="status-msg">
+            <span class="spinner"></span> Loading dimensions...
+          </div>
+        </div>
+        <div class="options-panel">
+          <details>
+            <summary>Time Options</summary>
+            <div class="options-stack">
+              <div class="opt-row">
+                <div class="opt-group">
+                  <label for="dimStart">Start period</label>
+                  <input id="dimStart" type="text" placeholder="e.g. 2020" />
+                </div>
+                <div class="opt-group">
+                  <label for="dimEnd">End period</label>
+                  <input id="dimEnd" type="text" placeholder="e.g. 2024" />
+                </div>
+              </div>
+              <div class="opt-group">
+                <label for="dimLastN">Last N observations</label>
+                <input
+                  id="dimLastN"
+                  type="number"
+                  min="1"
+                  placeholder="e.g. 10"
+                />
+              </div>
+            </div>
+          </details>
+        </div>
+        <div
+          class="dim-actions"
+          style="display: flex; flex-direction: column; gap: 6px"
+        >
+          <button
+            id="fetchDataBtn"
+            class="btn btn-primary"
+            onclick="doFetchData()"
+          >
+            Fetch Data
+          </button>
+          <button
+            id="explorerCodesBtn"
+            class="btn btn-outline"
+            onclick="doExplorerCodes()"
+          >
+            Export Codes to Sheet
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- QUICK FETCH TAB                                                    -->
+    <!-- ================================================================== -->
+    <div class="tab-panel" id="tab-quick">
+      <div class="quick-section" id="quickSection">
+        <div class="status-msg">
+          <span class="spinner"></span> Loading presets...
+        </div>
+      </div>
+
+      <div class="options-panel" id="quickOptions">
+        <details>
+          <summary>Override Options</summary>
+          <div class="options-stack">
+            <div class="opt-group">
+              <label for="qCountries">Countries (ISO3, comma-separated)</label>
+              <input
+                id="qCountries"
+                type="text"
+                placeholder="e.g. USA,CHN,DEU"
+              />
+            </div>
+            <div class="opt-row">
+              <div class="opt-group">
+                <label for="qStart">Start period</label>
+                <input id="qStart" type="text" placeholder="e.g. 2015" />
+              </div>
+              <div class="opt-group">
+                <label for="qEnd">End period</label>
+                <input id="qEnd" type="text" placeholder="e.g. 2024" />
+              </div>
+            </div>
+            <div class="opt-group">
+              <label for="qLastN">Last N observations</label>
+              <input id="qLastN" type="number" min="1" placeholder="e.g. 10" />
+            </div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- REFERENCE TAB                                                      -->
+    <!-- ================================================================== -->
+    <div class="tab-panel" id="tab-reference">
+      <div class="ref-area">
+        <h3>About OECD Data</h3>
+        <p>
+          The Organisation for Economic Co-operation and Development (<a
+            href="https://www.oecd.org/"
+            target="_blank"
+            >OECD</a
+          >) publishes over 1,400 statistical datasets covering macroeconomic
+          indicators, labour markets, trade, prices, productivity, education,
+          environment, and more. Data covers 38 member countries and many
+          partner economies, updated regularly.
+        </p>
+        <p>
+          This add-on uses the OECD SDMX REST API to query data directly into
+          your spreadsheet. No API key is required. Rate limit: 60 requests per
+          hour.
+        </p>
+
+        <h3>Key Datasets</h3>
+        <div class="ref-series">
+          <a
+            href="https://data-explorer.oecd.org/vis?df[ds]=DisseminateFinalDMZ&df[id]=DSD_NAAG%40DF_NAAG_I&df[ag]=OECD.SDD.NAD"
+            target="_blank"
+            >NAAG &mdash; National Accounts at a Glance (GDP)</a
+          >
+          <a
+            href="https://data-explorer.oecd.org/vis?df[ds]=DisseminateFinalDMZ&df[id]=DSD_EO%40DF_EO&df[ag]=OECD.ECO.MAD"
+            target="_blank"
+            >EO &mdash; Economic Outlook</a
+          >
+          <a
+            href="https://data-explorer.oecd.org/vis?df[ds]=DisseminateFinalDMZ&df[id]=DSD_PRICES%40DF_PRICES_ALL&df[ag]=OECD.SDD.TPS"
+            target="_blank"
+            >CPI &mdash; Consumer Price Indices</a
+          >
+          <a
+            href="https://data-explorer.oecd.org/vis?df[ds]=DisseminateFinalDMZ&df[id]=DSD_LFS%40DF_IALFS_UNE_M&df[ag]=OECD.SDD.TPS"
+            target="_blank"
+            >LFS &mdash; Monthly Unemployment Rates</a
+          >
+          <a
+            href="https://data-explorer.oecd.org/vis?df[ds]=DisseminateFinalDMZ&df[id]=DSD_BOP%40DF_BOP&df[ag]=OECD.SDD.TPS"
+            target="_blank"
+            >BOP &mdash; Balance of Payments</a
+          >
+          <a
+            href="https://data-explorer.oecd.org/vis?df[ds]=DisseminateFinalDMZ&df[id]=DSD_STES%40DF_CLI&df[ag]=OECD.SDD.STES"
+            target="_blank"
+            >CLI &mdash; Composite Leading Indicators</a
+          >
+          <a
+            href="https://data-explorer.oecd.org/vis?df[ds]=DisseminateFinalDMZ&df[id]=DSD_STES%40DF_FINMARK&df[ag]=OECD.SDD.STES"
+            target="_blank"
+            >FINMARK &mdash; Financial Market Indicators</a
+          >
+          <a
+            href="https://data-explorer.oecd.org/vis?df[ds]=DisseminateFinalDMZ&df[id]=DSD_KEI%40DF_KEI&df[ag]=OECD.SDD.STES"
+            target="_blank"
+            >KEI &mdash; Key Short-term Economic Indicators</a
+          >
+          <a
+            href="https://data-explorer.oecd.org/vis?df[ds]=DisseminateFinalDMZ&df[id]=DSD_PDB%40DF_PDB&df[ag]=OECD.SDD.TPS"
+            target="_blank"
+            >PDB &mdash; Productivity Database</a
+          >
+          <a
+            href="https://data-explorer.oecd.org/vis?df[ds]=DisseminateFinalDMZ&df[id]=DSD_WISE_IDD%40DF_IDD&df[ag]=OECD.WISE.INE"
+            target="_blank"
+            >IDD &mdash; Income Distribution Database</a
+          >
+        </div>
+
+        <h3>Country Codes</h3>
+        <p>
+          OECD uses ISO 3166-1 alpha-3 country codes (e.g., USA, DEU, GBR, JPN,
+          FRA). In the Explorer, available codes are loaded automatically for
+          each dimension.
+        </p>
+
+        <h3>SDMX Format</h3>
+        <p>
+          Data is retrieved via the <strong>OECD SDMX REST API</strong> in JSON
+          format. Time periods use SDMX conventions (e.g., &ldquo;2024&rdquo;
+          for annual, &ldquo;2024-Q1&rdquo; for quarterly, &ldquo;2024-06&rdquo;
+          for monthly).
+        </p>
+
+        <h3>Useful Links</h3>
+        <div class="ref-series">
+          <a href="https://data-explorer.oecd.org/" target="_blank"
+            >OECD Data Explorer</a
+          >
+          <a href="https://data-explorer.oecd.org/faq/" target="_blank"
+            >Data Explorer FAQ</a
+          >
+          <a
+            href="https://gitlab.algobank.oecd.org/public-documentation/dotstat-migration/-/blob/main/DeveloperGuide.md"
+            target="_blank"
+            >OECD API Developer Guide</a
+          >
+          <a href="https://sdmx.org/" target="_blank"
+            >SDMX Standards &amp; Documentation</a
+          >
+        </div>
+      </div>
+
+      <div class="ref-actions">
+        <button
+          class="btn btn-outline"
+          id="exportDfBtn"
+          onclick="exportDataflows()"
+        >
+          Export All Datasets to Sheet
+        </button>
+      </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- SCRIPT                                                             -->
+    <!-- ================================================================== -->
+    <script>
+      // ---- Tab switching ----
+
+      var tabBtns = document.querySelectorAll(".tab-btn");
+      var tabPanels = document.querySelectorAll(".tab-panel");
+
+      for (var i = 0; i < tabBtns.length; i++) {
+        tabBtns[i].addEventListener("click", function () {
+          var target = this.getAttribute("data-tab");
+          for (var j = 0; j < tabBtns.length; j++) {
+            tabBtns[j].classList.remove("active");
+            tabPanels[j].classList.remove("active");
+          }
+          this.classList.add("active");
+          document.getElementById("tab-" + target).classList.add("active");
+        });
+      }
+
+      // ---- State ----
+
+      var currentDataflow = null; // {id, name, agency, version}
+      var currentDimensions = []; // DSD dimensions array
+
+      // ---- Explorer: Search ----
+
+      var searchInput = document.getElementById("searchInput");
+
+      searchInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") doSearch();
+      });
+
+      function doSearch() {
+        var query = searchInput.value.trim();
+        if (!query) return;
+
+        var btn = document.getElementById("searchBtn");
+        var area = document.getElementById("resultsArea");
+        btn.disabled = true;
+        area.innerHTML =
+          '<div class="status-msg"><span class="spinner"></span> Searching...</div>';
+
+        google.script.run
+          .withSuccessHandler(function (results) {
+            btn.disabled = false;
+            renderDataflows(results);
+          })
+          .withFailureHandler(function (err) {
+            btn.disabled = false;
+            area.innerHTML =
+              '<div class="status-msg error">' +
+              escapeHtml(err.message) +
+              "</div>";
+          })
+          .oecd_searchDataflows(query);
+      }
+
+      function renderDataflows(dfs) {
+        var area = document.getElementById("resultsArea");
+        if (!dfs || dfs.length === 0) {
+          area.innerHTML =
+            '<div class="empty-state">No datasets found. Try different keywords.</div>';
+          return;
+        }
+
+        var label =
+          dfs.length >= 50
+            ? "Top " + dfs.length + " results"
+            : dfs.length + (dfs.length === 1 ? " dataset" : " datasets");
+
+        var html = '<div class="results-label">' + label + "</div>";
+        for (var i = 0; i < dfs.length; i++) {
+          var d = dfs[i];
+          html +=
+            '<div class="card" onclick="selectDataflow(\'' +
+            escapeAttr(d.id) +
+            "','" +
+            escapeAttr(d.name) +
+            "','" +
+            escapeAttr(d.agency) +
+            "')\">" +
+            '<div class="card-id">' +
+            escapeHtml(d.id) +
+            "</div>" +
+            '<div class="card-title">' +
+            escapeHtml(d.name) +
+            "</div>" +
+            '<div class="card-meta"><span>' +
+            escapeHtml(d.agency) +
+            "</span></div>" +
+            "</div>";
+        }
+        area.innerHTML = html;
+      }
+
+      // ---- Explorer: Browse All Datasets ----
+
+      function doBrowseAll() {
+        var area = document.getElementById("resultsArea");
+        area.innerHTML =
+          '<div class="status-msg"><span class="spinner"></span> Loading all datasets...</div>';
+
+        google.script.run
+          .withSuccessHandler(function (results) {
+            renderDataflowsByLetter(results);
+          })
+          .withFailureHandler(function (err) {
+            area.innerHTML =
+              '<div class="status-msg error">' +
+              escapeHtml(err.message) +
+              "</div>";
+          })
+          .oecd_getDataflows();
+      }
+
+      function renderDataflowsByLetter(dfs) {
+        var area = document.getElementById("resultsArea");
+        if (!dfs || dfs.length === 0) {
+          area.innerHTML =
+            '<div class="empty-state">No datasets available.</div>';
+          return;
+        }
+
+        // Group by first letter of name
+        var groups = {};
+        for (var i = 0; i < dfs.length; i++) {
+          var letter = (dfs[i].name || dfs[i].id || "?")
+            .charAt(0)
+            .toUpperCase();
+          if (!groups[letter]) groups[letter] = [];
+          groups[letter].push(dfs[i]);
+        }
+
+        var letters = Object.keys(groups).sort();
+        var html =
+          '<div class="results-label">' + dfs.length + " datasets</div>";
+
+        // Letter index
+        html +=
+          '<div style="padding:4px 0 8px;line-height:1.8;display:flex;flex-wrap:wrap;gap:2px 0;">';
+        for (var l = 0; l < letters.length; l++) {
+          html +=
+            '<a href="#" onclick="scrollToLetter(\'' +
+            letters[l] +
+            '\');return false;" style="font-size:12px;margin-right:6px;font-weight:600;color:#4285f4;text-decoration:none;">' +
+            letters[l] +
+            "</a>";
+        }
+        html += "</div>";
+
+        // Each letter group
+        for (var g = 0; g < letters.length; g++) {
+          var lt = letters[g];
+          html +=
+            '<div id="letter_' +
+            lt +
+            '" class="quick-section-title" style="margin-top:8px;">' +
+            lt +
+            " (" +
+            groups[lt].length +
+            ")</div>";
+          for (var k = 0; k < groups[lt].length; k++) {
+            var d = groups[lt][k];
+            html +=
+              '<div class="card" onclick="selectDataflow(\'' +
+              escapeAttr(d.id) +
+              "','" +
+              escapeAttr(d.name) +
+              "','" +
+              escapeAttr(d.agency) +
+              "')\">" +
+              '<div class="card-id">' +
+              escapeHtml(d.id) +
+              "</div>" +
+              '<div class="card-title">' +
+              escapeHtml(d.name) +
+              "</div>" +
+              '<div class="card-meta"><span>' +
+              escapeHtml(d.agency) +
+              "</span></div>" +
+              "</div>";
+          }
+        }
+        area.innerHTML = html;
+      }
+
+      function scrollToLetter(letter) {
+        var el = document.getElementById("letter_" + letter);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      // ---- Explorer: Dimension selection ----
+
+      function selectDataflow(id, name, agency) {
+        currentDataflow = { id: id, name: name, agency: agency };
+
+        // Switch to dimension panel
+        document.getElementById("explorerSearch").style.display = "none";
+        var dimPanel = document.getElementById("dimPanel");
+        dimPanel.classList.add("active");
+        document.getElementById("dimDatasetLabel").textContent =
+          id + " — " + name;
+        document.getElementById("dimScroll").innerHTML =
+          '<div class="status-msg"><span class="spinner"></span> Loading dimensions...</div>';
+
+        // Fetch available codes for all dimensions
+        google.script.run
+          .withSuccessHandler(function (dsd) {
+            currentDimensions = dsd.dimensions || [];
+            loadAvailableCodes();
+          })
+          .withFailureHandler(function (err) {
+            document.getElementById("dimScroll").innerHTML =
+              '<div class="status-msg error">' +
+              escapeHtml(err.message) +
+              "</div>";
+          })
+          .oecd_getDataStructure(id, agency);
+      }
+
+      function loadAvailableCodes() {
+        google.script.run
+          .withSuccessHandler(function (allCodes) {
+            renderDimensionSelectors(allCodes);
+          })
+          .withFailureHandler(function (err) {
+            // Fallback: render selectors without pre-populated values
+            renderDimensionSelectors({});
+          })
+          .oecd_getAllAvailableCodes(
+            currentDataflow.id,
+            currentDataflow.agency,
+          );
+      }
+
+      var dimCodeLists = {};
+
+      function renderDimensionSelectors(availableCodes) {
+        dimCodeLists = {};
+        var html = "";
+        for (var i = 0; i < currentDimensions.length; i++) {
+          var dim = currentDimensions[i];
+          if (dim.type === "TimeDimension") continue;
+
+          var codes = availableCodes[dim.id] || dim.values || [];
+          html += '<div class="dim-group">';
+          html +=
+            "<label>" +
+            escapeHtml(dim.name || dim.id) +
+            ' <span style="font-weight:400;color:#80868b;">(' +
+            escapeHtml(dim.id) +
+            ")</span></label>";
+
+          if (codes.length > 0) {
+            dimCodeLists[dim.id] = codes;
+            if (codes.length > 10) {
+              html +=
+                '<input type="text" placeholder="Filter ' +
+                escapeAttr(dim.name || dim.id) +
+                '..." oninput="filterDimOptions(\'' +
+                escapeAttr(dim.id) +
+                '\', this.value)" style="margin-bottom:4px;" />';
+            }
+            html +=
+              '<select id="dim_' +
+              escapeAttr(dim.id) +
+              '" multiple size="' +
+              Math.min(codes.length, 6) +
+              '">';
+            for (var j = 0; j < codes.length; j++) {
+              var c = codes[j];
+              var val = typeof c === "object" ? c.id || c.value : c;
+              var cLabel =
+                typeof c === "object" && c.name && c.name !== val
+                  ? val + " \u2014 " + c.name
+                  : val;
+              html +=
+                '<option value="' +
+                escapeAttr(val) +
+                '" title="' +
+                escapeAttr(cLabel) +
+                '">' +
+                escapeHtml(cLabel) +
+                "</option>";
+            }
+            html += "</select>";
+            html +=
+              '<div class="dim-hint">Hold Ctrl/Cmd to select multiple. Leave empty for all.</div>';
+          } else {
+            html +=
+              '<input id="dim_' +
+              escapeAttr(dim.id) +
+              '" type="text" placeholder="Enter codes (comma-separated)" />';
+            html +=
+              '<div class="dim-hint">Comma-separated codes, or leave empty for all.</div>';
+          }
+
+          html += "</div>";
+        }
+
+        if (!html) {
+          html =
+            '<div class="status-msg error">No dimensions found for this dataset.</div>';
+        }
+        document.getElementById("dimScroll").innerHTML = html;
+      }
+
+      function filterDimOptions(dimId, query) {
+        var select = document.getElementById("dim_" + dimId);
+        if (!select) return;
+        var codes = dimCodeLists[dimId] || [];
+        var q = query.toLowerCase().trim();
+        var selected = {};
+        for (var i = 0; i < select.options.length; i++) {
+          if (select.options[i].selected)
+            selected[select.options[i].value] = true;
+        }
+        select.innerHTML = "";
+        for (var j = 0; j < codes.length; j++) {
+          var c = codes[j];
+          var val = typeof c === "object" ? c.id || c.value : c;
+          var cLabel =
+            typeof c === "object" && c.name && c.name !== val
+              ? val + " \u2014 " + c.name
+              : val;
+          if (q && cLabel.toLowerCase().indexOf(q) === -1) continue;
+          var opt = document.createElement("option");
+          opt.value = val;
+          opt.textContent = cLabel;
+          if (selected[val]) opt.selected = true;
+          select.appendChild(opt);
+        }
+      }
+
+      function backToSearch() {
+        document.getElementById("dimPanel").classList.remove("active");
+        document.getElementById("explorerSearch").style.cssText =
+          "display:flex;flex-direction:column;overflow:hidden;flex:1;";
+        currentDataflow = null;
+        currentDimensions = [];
+      }
+
+      function gatherDimensions() {
+        var dims = {};
+        for (var i = 0; i < currentDimensions.length; i++) {
+          var dim = currentDimensions[i];
+          if (dim.type === "TimeDimension") continue;
+
+          var el = document.getElementById("dim_" + dim.id);
+          if (!el) continue;
+
+          var values = [];
+          if (el.tagName === "SELECT") {
+            for (var j = 0; j < el.options.length; j++) {
+              if (el.options[j].selected) {
+                values.push(el.options[j].value);
+              }
+            }
+          } else {
+            // Text input
+            var raw = el.value.trim();
+            if (raw) {
+              values = raw.split(/[,;\s]+/).filter(function (v) {
+                return v;
+              });
+            }
+          }
+
+          if (values.length > 0) {
+            dims[dim.id] = values;
+          }
+        }
+        return dims;
+      }
+
+      function doFetchData() {
+        if (!currentDataflow) return;
+
+        var dims = gatherDimensions();
+        var options = {};
+        var start = document.getElementById("dimStart").value.trim();
+        var end = document.getElementById("dimEnd").value.trim();
+        var lastN = document.getElementById("dimLastN").value.trim();
+        if (start) options.startPeriod = start;
+        if (end) options.endPeriod = end;
+        if (lastN) options.lastNObservations = parseInt(lastN, 10);
+
+        var btn = document.getElementById("fetchDataBtn");
+        btn.disabled = true;
+        btn.textContent = "Fetching...";
+
+        google.script.run
+          .withSuccessHandler(function (msg) {
+            btn.textContent = "Done!";
+            setTimeout(function () {
+              btn.disabled = false;
+              btn.textContent = "Fetch Data";
+            }, 2000);
+          })
+          .withFailureHandler(function (err) {
+            btn.disabled = false;
+            btn.textContent = "Fetch Data";
+            alert("Error: " + err.message);
+          })
+          .oecd_fetchAndWriteData(
+            currentDataflow.id,
+            currentDataflow.agency,
+            dims,
+            options,
+            currentDataflow.id,
+          );
+      }
+
+      function doExplorerCodes() {
+        if (!currentDataflow) return;
+
+        var btn = document.getElementById("explorerCodesBtn");
+        btn.disabled = true;
+        btn.textContent = "Exporting...";
+
+        google.script.run
+          .withSuccessHandler(function (msg) {
+            btn.textContent = "Done!";
+            setTimeout(function () {
+              btn.disabled = false;
+              btn.textContent = "Export Codes to Sheet";
+            }, 2000);
+          })
+          .withFailureHandler(function (err) {
+            btn.disabled = false;
+            btn.textContent = "Export Codes to Sheet";
+            alert("Error: " + err.message);
+          })
+          .oecd_writeExplorerCodebook(
+            currentDataflow.id,
+            currentDataflow.agency,
+            currentDataflow.name,
+          );
+      }
+
+      // ---- Quick Fetch tab ----
+
+      (function initQuickFetch() {
+        google.script.run
+          .withSuccessHandler(renderQuickPresets)
+          .withFailureHandler(function (err) {
+            document.getElementById("quickSection").innerHTML =
+              '<div class="status-msg error">' +
+              escapeHtml(err.message) +
+              "</div>";
+          })
+          .oecd_getQuickPresets();
+      })();
+
+      function renderQuickPresets(categories) {
+        var area = document.getElementById("quickSection");
+        if (!categories || categories.length === 0) {
+          area.innerHTML =
+            '<div class="empty-state">No presets configured.</div>';
+          return;
+        }
+
+        var html = "";
+        for (var i = 0; i < categories.length; i++) {
+          var cat = categories[i];
+          html +=
+            '<div class="quick-section-title">' +
+            escapeHtml(cat.category) +
+            "</div>";
+          html += '<div class="quick-grid">';
+          for (var j = 0; j < cat.items.length; j++) {
+            var item = cat.items[j];
+            var detailId = "qdetail_" + i + "_" + j;
+            // Main card (with collapsible dimensions inside)
+            html +=
+              '<div class="quick-item">' +
+              '<div style="display:flex;align-items:center;justify-content:space-between;">' +
+              '<div class="quick-item-info">' +
+              '<div class="quick-item-name">' +
+              escapeHtml(item.name) +
+              "</div>" +
+              '<div class="quick-item-dataset">' +
+              escapeHtml(item.dataflowId || item.sheetName) +
+              "</div>" +
+              "</div>" +
+              '<div style="display:flex;gap:4px;flex-shrink:0;margin-left:6px;">' +
+              '<button class="btn btn-outline btn-sm" ' +
+              "onclick=\"doQuickCodes('" +
+              escapeAttr(item.id) +
+              "',this)\">" +
+              "Codes</button>" +
+              '<button class="btn btn-primary btn-sm" ' +
+              "onclick=\"doQuickFetch('" +
+              escapeAttr(item.id) +
+              "',this)\">" +
+              "Fetch</button>" +
+              "</div>" +
+              "</div>";
+
+            // Collapsible dimension details (inside the card)
+            if (item.dimSummary && item.dimSummary.length > 0) {
+              html += "<details><summary>Dimensions</summary>";
+              for (var k = 0; k < item.dimSummary.length; k++) {
+                var ds = item.dimSummary[k];
+                html +=
+                  '<div class="quick-detail-row">' +
+                  '<span class="dim-label">' +
+                  escapeHtml(ds.dim) +
+                  ":</span> " +
+                  escapeHtml(ds.values) +
+                  "</div>";
+              }
+              html += "</details>";
+            }
+
+            html += "</div>";
+          }
+          html += "</div>";
+        }
+        area.innerHTML = html;
+      }
+
+      function getQuickOverrides() {
+        var overrides = {};
+        var countries = document.getElementById("qCountries").value.trim();
+        var start = document.getElementById("qStart").value.trim();
+        var end = document.getElementById("qEnd").value.trim();
+        var lastN = document.getElementById("qLastN").value.trim();
+        if (countries) {
+          overrides.countries = countries.split(/[,;\s]+/).filter(function (v) {
+            return v;
+          });
+        }
+        if (start) overrides.startPeriod = start;
+        if (end) overrides.endPeriod = end;
+        if (lastN) overrides.lastNObservations = parseInt(lastN, 10);
+        return overrides;
+      }
+
+      function doQuickFetch(presetId, btn) {
+        btn.disabled = true;
+        btn.textContent = "...";
+
+        var overrides = getQuickOverrides();
+
+        google.script.run
+          .withSuccessHandler(function (msg) {
+            btn.textContent = "Done";
+            setTimeout(function () {
+              btn.disabled = false;
+              btn.textContent = "Fetch";
+            }, 2000);
+          })
+          .withFailureHandler(function (err) {
+            btn.disabled = false;
+            btn.textContent = "Fetch";
+            alert("Error: " + err.message);
+          })
+          .oecd_runQuickFetch(presetId, overrides);
+      }
+
+      function doQuickCodes(presetId, btn) {
+        btn.disabled = true;
+        btn.textContent = "...";
+
+        google.script.run
+          .withSuccessHandler(function (msg) {
+            btn.textContent = "Done";
+            setTimeout(function () {
+              btn.disabled = false;
+              btn.textContent = "Codes";
+            }, 2000);
+          })
+          .withFailureHandler(function (err) {
+            btn.disabled = false;
+            btn.textContent = "Codes";
+            alert("Error: " + err.message);
+          })
+          .oecd_writeQuickCodebook(presetId);
+      }
+
+      // ---- Reference tab ----
+
+      function exportDataflows() {
+        var btn = document.getElementById("exportDfBtn");
+        btn.disabled = true;
+        btn.textContent = "Exporting...";
+
+        google.script.run
+          .withSuccessHandler(function (msg) {
+            btn.textContent = "Done!";
+            setTimeout(function () {
+              btn.disabled = false;
+              btn.textContent = "Export All Datasets to Sheet";
+            }, 3000);
+          })
+          .withFailureHandler(function (err) {
+            btn.disabled = false;
+            btn.textContent = "Export All Datasets to Sheet";
+            alert("Error: " + err.message);
+          })
+          .oecd_exportDataflows();
+      }
+
+      // ---- Utilities ----
+
+      function escapeHtml(str) {
+        var div = document.createElement("div");
+        div.appendChild(document.createTextNode(str || ""));
+        return div.innerHTML;
+      }
+
+      function escapeAttr(str) {
+        return (str || "")
+          .replace(/&/g, "&amp;")
+          .replace(/'/g, "&#39;")
+          .replace(/"/g, "&quot;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+    </script>
+  </body>
+</html>

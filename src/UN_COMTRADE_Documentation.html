@@ -1,0 +1,282 @@
+<!doctype html>
+<html>
+  <head>
+    <base target="_top" />
+    <style>
+      body {
+        font-family: "Google Sans", Roboto, Arial, sans-serif;
+        font-size: 13px;
+        color: #202124;
+        margin: 0;
+        padding: 20px 24px;
+        line-height: 1.5;
+      }
+      h2 {
+        font-size: 16px;
+        color: #1a73e8;
+        margin: 20px 0 8px;
+        border-bottom: 1px solid #dadce0;
+        padding-bottom: 4px;
+      }
+      h2:first-child {
+        margin-top: 0;
+      }
+      h3 {
+        font-size: 13px;
+        font-weight: 600;
+        margin: 12px 0 4px;
+        color: #3c4043;
+      }
+      p {
+        margin: 4px 0 8px;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 6px 0 12px;
+        font-size: 12px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 4px 8px;
+        border: 1px solid #dadce0;
+      }
+      th {
+        background: #f1f3f4;
+        font-weight: 600;
+      }
+      .note {
+        background: #e8f0fe;
+        border-left: 3px solid #1a73e8;
+        padding: 6px 10px;
+        margin: 8px 0;
+        font-size: 12px;
+      }
+      code {
+        background: #f1f3f4;
+        padding: 1px 4px;
+        border-radius: 3px;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Query Modes</h2>
+
+    <h3>Trade Summary</h3>
+    <p>
+      Aggregate trade totals for one reporter against the World. Shows total
+      import and export values per period.
+    </p>
+    <table>
+      <tr>
+        <th>Column</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td>Period</td>
+        <td>Year (or month if Monthly frequency)</td>
+      </tr>
+      <tr>
+        <td>Reporter / Reporter ISO</td>
+        <td>Reporting country name and ISO 3-letter code</td>
+      </tr>
+      <tr>
+        <td>Flow</td>
+        <td>Import, Export, Re-import, or Re-export</td>
+      </tr>
+      <tr>
+        <td>Trade Value (USD)</td>
+        <td>Total trade value in US dollars</td>
+      </tr>
+      <tr>
+        <td>Net Weight (kg)</td>
+        <td>
+          Total weight; may be 0 for aggregate TOTAL commodity level (only
+          populated for specific commodities)
+        </td>
+      </tr>
+      <tr>
+        <td>Unit Value (USD/kg)</td>
+        <td>
+          Trade Value &divide; Net Weight. Empty when Net Weight is 0 or
+          unavailable.
+        </td>
+      </tr>
+      <tr>
+        <td>YoY Growth (%)</td>
+        <td>
+          Year-over-year percentage change vs. the previous year. Only appears
+          when multiple years are selected.
+        </td>
+      </tr>
+    </table>
+
+    <h3>Trade Balance</h3>
+    <p>
+      Exports and imports side by side for a reporter&ndash;partner pair, with a
+      computed balance column. Uses the dedicated UN Comtrade balance endpoint.
+    </p>
+    <table>
+      <tr>
+        <th>Column</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td>Exports (USD)</td>
+        <td>Total export value</td>
+      </tr>
+      <tr>
+        <td>Imports (USD)</td>
+        <td>Total import value</td>
+      </tr>
+      <tr>
+        <td>Trade Balance (USD)</td>
+        <td>
+          Exports &minus; Imports. Positive = surplus, negative = deficit.
+        </td>
+      </tr>
+    </table>
+
+    <h3>Partner Breakdown</h3>
+    <p>
+      Trade values with every partner country. Useful for identifying top
+      trading partners. The &ldquo;World&rdquo; row shows the aggregate total.
+    </p>
+    <table>
+      <tr>
+        <th>Column</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td>Partner / Partner ISO</td>
+        <td>Partner country name and ISO code</td>
+      </tr>
+      <tr>
+        <td>Trade Value (USD)</td>
+        <td>Bilateral trade value with this partner</td>
+      </tr>
+      <tr>
+        <td>Trade Share (%)</td>
+        <td>
+          This partner's share of total trade (excluding the World aggregate
+          row) within the same period and flow direction.
+        </td>
+      </tr>
+    </table>
+
+    <h3>Product Breakdown</h3>
+    <p>
+      Trade values by commodity code for a specific reporter&ndash;partner pair.
+      Supports 2-digit chapters, 4-digit headings, or specific codes.
+    </p>
+    <table>
+      <tr>
+        <th>Column</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td>Commodity Code / Commodity</td>
+        <td>HS, SITC, or BEC code and description</td>
+      </tr>
+      <tr>
+        <td>Trade Share (%)</td>
+        <td>
+          This commodity's share of total trade within the same period and flow.
+        </td>
+      </tr>
+      <tr>
+        <td>Unit Value (USD/kg)</td>
+        <td>Price per kilogram; useful for comparing price trends.</td>
+      </tr>
+    </table>
+
+    <h3>Bilateral Trade</h3>
+    <p>
+      Detailed commodity-level trade between two specific countries. Optionally
+      uses mirror data (the partner's reported data) as a fallback when the
+      reporter has no data.
+    </p>
+    <table>
+      <tr>
+        <th>Column</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td>Data Source</td>
+        <td>
+          <code>reported</code> = reporter's own data; <code>mirror</code> =
+          partner's data with flows flipped (only when &ldquo;Use Mirror
+          Data&rdquo; is enabled).
+        </td>
+      </tr>
+      <tr>
+        <td>YoY Growth (%)</td>
+        <td>
+          Year-over-year change per commodity&ndash;flow combination across
+          periods.
+        </td>
+      </tr>
+    </table>
+
+    <h2>General Notes</h2>
+
+    <div class="note">
+      <strong>Net Weight</strong> is only available for individual commodities.
+      At the aggregate TOTAL level, Net Weight will be 0 and Unit Value will be
+      empty. This is expected.
+    </div>
+
+    <div class="note">
+      <strong>Trade Share</strong> is calculated within each period + flow
+      group. In Partner Breakdown, the &ldquo;World&rdquo; row is excluded from
+      the denominator and shows no share value, since it represents the total
+      itself.
+    </div>
+
+    <div class="note">
+      <strong>YoY Growth</strong> matches rows across years using stable
+      identifiers (ISO codes, commodity codes, flow). It requires at least two
+      periods. The first year in the range will not have a growth value.
+    </div>
+
+    <h2>Classification Systems</h2>
+    <p>
+      <strong>HS</strong> (Harmonized System) &mdash; the most common goods
+      classification. Revised every 5 years (HS92, HS96, HS02, HS07, HS12, HS17,
+      HS22).
+    </p>
+    <p>
+      <strong>SITC</strong> (Standard International Trade Classification)
+      &mdash; analytical classification grouping products by economic function.
+    </p>
+    <p>
+      <strong>BEC</strong> (Broad Economic Categories) &mdash; groups products
+      into capital goods, intermediate goods, and consumer goods.
+    </p>
+    <p>
+      <strong>EBOPS</strong> (Extended Balance of Payments Services) &mdash;
+      used for Services data type.
+    </p>
+
+    <h2>Tips</h2>
+    <p>
+      &bull; Start with <strong>Trade Summary</strong> to get the big picture,
+      then drill down with Partner or Product Breakdown.
+    </p>
+    <p>
+      &bull; For bilateral trade with small or developing countries, enable
+      <strong>Use Mirror Data</strong> &mdash; the partner may report data even
+      when the reporter does not.
+    </p>
+    <p>
+      &bull; Use <strong>Annual</strong> frequency for most analyses. Monthly
+      data produces many more rows and is only available for Goods.
+    </p>
+    <p>
+      &bull; Each fetch creates a new sheet. Use
+      <em>UN Comtrade &gt; Clear All Cache</em> if metadata seems stale.
+    </p>
+  </body>
+</html>

@@ -1,0 +1,1263 @@
+<!doctype html>
+<html>
+  <head>
+    <base target="_top" />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Google Sans", Roboto, Arial, sans-serif;
+        font-size: 13px;
+        color: #202124;
+        background: #f8f9fa;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      /* ---- Tabs ---- */
+
+      .tab-bar {
+        display: flex;
+        background: #fff;
+        border-bottom: 1px solid #dadce0;
+        flex-shrink: 0;
+      }
+
+      .tab-btn {
+        flex: 1;
+        padding: 10px 4px;
+        border: none;
+        background: none;
+        font-size: 12px;
+        font-weight: 500;
+        color: #5f6368;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition:
+          color 0.15s,
+          border-color 0.15s;
+      }
+
+      .tab-btn:hover {
+        color: #202124;
+      }
+
+      .tab-btn.active {
+        color: #4285f4;
+        border-bottom-color: #4285f4;
+      }
+
+      .tab-panel {
+        display: none;
+        flex: 1;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .tab-panel.active {
+        display: flex;
+      }
+
+      /* ---- Buttons ---- */
+
+      .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+
+      .btn-primary {
+        background: #4285f4;
+        color: #fff;
+      }
+
+      .btn-primary:hover {
+        background: #3367d6;
+      }
+
+      .btn-primary:disabled {
+        background: #a8c7fa;
+        cursor: default;
+      }
+
+      .btn-sm {
+        padding: 5px 12px;
+        font-size: 12px;
+      }
+
+      .btn-outline {
+        background: #fff;
+        color: #4285f4;
+        border: 1px solid #dadce0;
+      }
+
+      .btn-outline:hover {
+        background: #f0f4ff;
+      }
+
+      /* ---- Explorer tab ---- */
+
+      .explorer-scroll {
+        flex: 1;
+        overflow-y: auto;
+        padding: 12px 14px;
+      }
+
+      .section {
+        margin-bottom: 14px;
+      }
+
+      .section-label {
+        font-size: 11px;
+        font-weight: 500;
+        color: #5f6368;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+      }
+
+      /* Form Controls */
+      label {
+        display: block;
+        font-size: 12px;
+        font-weight: 500;
+        color: #3c4043;
+        margin-bottom: 3px;
+        margin-top: 10px;
+      }
+      label:first-child {
+        margin-top: 0;
+      }
+
+      select,
+      input[type="text"],
+      input[type="password"] {
+        width: 100%;
+        box-sizing: border-box;
+        font-size: 13px;
+        padding: 6px 8px;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        background: #fff;
+        outline: none;
+      }
+
+      select {
+        -webkit-appearance: auto;
+        appearance: auto;
+      }
+
+      select:hover {
+        background: #fff !important;
+        background-image: none !important;
+      }
+
+      select:focus,
+      input[type="text"]:focus,
+      input[type="password"]:focus {
+        border-color: #4285f4;
+        box-shadow: 0 0 0 1px #4285f4;
+      }
+
+      /* Radio/Checkbox groups */
+      .radio-group,
+      .check-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 12px;
+        margin-top: 3px;
+      }
+      .radio-group label,
+      .check-group label {
+        display: inline-flex;
+        align-items: center;
+        font-weight: 400;
+        margin: 0;
+        cursor: pointer;
+        font-size: 12px;
+      }
+      .radio-group input,
+      .check-group input {
+        -webkit-appearance: auto;
+        appearance: auto;
+        width: auto !important;
+        height: auto !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        margin-right: 4px !important;
+        border: initial !important;
+        box-shadow: none !important;
+        background: initial !important;
+        vertical-align: middle;
+      }
+
+      /* Searchable dropdown */
+      .search-select-wrapper {
+        position: relative;
+      }
+      .search-select-wrapper input[type="text"] {
+        padding-right: 24px;
+      }
+      .search-select-wrapper .dropdown-list {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        max-height: 180px;
+        overflow-y: auto;
+        background: #fff;
+        border: 1px solid #dadce0;
+        border-top: none;
+        border-radius: 0 0 4px 4px;
+        z-index: 100;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      }
+      .search-select-wrapper .dropdown-list.show {
+        display: block;
+      }
+      .dropdown-item {
+        padding: 6px 8px;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .dropdown-item:hover,
+      .dropdown-item.highlighted {
+        background: #e8f0fe;
+      }
+      .dropdown-item .item-id {
+        color: #5f6368;
+        font-size: 10px;
+        margin-left: 4px;
+      }
+
+      /* Options toggles */
+      .toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 8px;
+        font-size: 12px;
+      }
+      .toggle-row input[type="checkbox"] {
+        -webkit-appearance: checkbox;
+        appearance: auto;
+        width: auto !important;
+        height: auto !important;
+        padding: 0 !important;
+        border: initial !important;
+        box-shadow: none !important;
+        background: initial !important;
+      }
+
+      /* Warning box */
+      .warning-box {
+        background: #fef7e0;
+        border: 1px solid #f9ab00;
+        border-radius: 4px;
+        padding: 6px 8px;
+        font-size: 11px;
+        color: #8a6d00;
+        margin-top: 6px;
+        display: none;
+      }
+
+      /* Explorer bottom bar */
+      .explorer-actions {
+        padding: 10px 14px;
+        border-top: 1px solid #dadce0;
+        background: #fff;
+        flex-shrink: 0;
+      }
+
+      .fetch-btn {
+        width: 100%;
+        padding: 9px;
+        font-size: 13px;
+        font-weight: 500;
+        background: #4285f4;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+      .fetch-btn:hover {
+        background: #3367d6;
+      }
+      .fetch-btn:disabled {
+        background: #a8c7fa;
+        cursor: default;
+      }
+
+      .status-msg {
+        font-size: 12px;
+        padding: 4px 0 0;
+        text-align: center;
+      }
+      .status-msg.error {
+        color: #d93025;
+      }
+      .status-msg.success {
+        color: #188038;
+      }
+      .status-msg.loading {
+        color: #4285f4;
+      }
+
+      /* ---- Quick Fetch tab ---- */
+
+      .quick-section {
+        padding: 10px 12px;
+        overflow-y: auto;
+        flex: 1;
+      }
+
+      .quick-section-title {
+        font-size: 11px;
+        font-weight: 500;
+        color: #5f6368;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 10px 0 6px;
+      }
+
+      .quick-section-title:first-child {
+        margin-top: 0;
+      }
+
+      .quick-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .quick-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        background: #fff;
+        border: 1px solid #dadce0;
+        border-radius: 6px;
+        padding: 7px 10px;
+        transition: box-shadow 0.15s;
+      }
+
+      .quick-item:hover {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .quick-item-info {
+        min-width: 0;
+      }
+
+      .quick-item-name {
+        font-size: 12px;
+        font-weight: 500;
+        color: #202124;
+      }
+
+      .quick-item-desc {
+        font-size: 10px;
+        line-height: 1.35;
+        color: #5f6368;
+        white-space: normal;
+        word-break: break-word;
+      }
+
+      .quick-item .btn-sm {
+        flex-shrink: 0;
+        margin-left: 6px;
+      }
+
+      /* Quick Fetch options panel */
+      .options-panel {
+        background: #fff;
+        border-top: 1px solid #dadce0;
+        padding: 10px 12px;
+        flex-shrink: 0;
+      }
+
+      .options-panel summary {
+        font-size: 11px;
+        font-weight: 500;
+        color: #5f6368;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        user-select: none;
+        padding: 2px 0;
+      }
+
+      .options-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-top: 8px;
+      }
+
+      .opt-group label {
+        display: block;
+        font-size: 11px;
+        color: #5f6368;
+        margin-bottom: 2px;
+        margin-top: 0;
+      }
+
+      .opt-group select,
+      .opt-group input {
+        width: 100%;
+        padding: 5px 6px;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        font-size: 12px;
+        outline: none;
+      }
+
+      .opt-group select:focus,
+      .opt-group input:focus {
+        border-color: #4285f4;
+      }
+
+      .opt-row {
+        display: flex;
+        gap: 8px;
+      }
+
+      .opt-row .opt-group {
+        flex: 1;
+      }
+
+      /* ---- Reference tab ---- */
+
+      .ref-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: 12px;
+      }
+
+      .ref-area h3 {
+        font-size: 13px;
+        font-weight: 600;
+        margin: 14px 0 6px;
+      }
+
+      .ref-area h3:first-child {
+        margin-top: 0;
+      }
+
+      .ref-area p {
+        font-size: 12px;
+        color: #3c4043;
+        line-height: 1.5;
+        margin-bottom: 8px;
+      }
+
+      .ref-area ul {
+        font-size: 12px;
+        color: #3c4043;
+        line-height: 1.6;
+        margin: 0 0 10px 16px;
+        padding: 0;
+      }
+
+      .ref-area ul li {
+        margin-bottom: 2px;
+      }
+
+      .ref-links {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        margin-bottom: 10px;
+      }
+
+      .ref-links a {
+        font-size: 12px;
+        color: #4285f4;
+        text-decoration: none;
+        line-height: 1.4;
+      }
+
+      .ref-links a:hover {
+        text-decoration: underline;
+      }
+
+      .ref-table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 6px 0 12px;
+        font-size: 11px;
+      }
+
+      .ref-table th,
+      .ref-table td {
+        text-align: left;
+        padding: 4px 6px;
+        border: 1px solid #dadce0;
+      }
+
+      .ref-table th {
+        background: #f1f3f4;
+        font-weight: 600;
+      }
+
+      .ref-note {
+        background: #e8f0fe;
+        border-left: 3px solid #4285f4;
+        padding: 6px 10px;
+        margin: 8px 0;
+        font-size: 11px;
+        line-height: 1.5;
+        color: #3c4043;
+      }
+
+      code {
+        background: #f1f3f4;
+        padding: 1px 4px;
+        border-radius: 3px;
+        font-size: 11px;
+      }
+
+      /* ---- Spinner ---- */
+
+      .spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid #dadce0;
+        border-top-color: #4285f4;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        vertical-align: middle;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .spinner-lg {
+        display: none;
+        width: 20px;
+        height: 20px;
+        border: 2px solid #dadce0;
+        border-top-color: #4285f4;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 4px auto 0;
+      }
+
+      /* ---- Hidden helper ---- */
+
+      .hidden {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="explorer" type="button">Explorer</button>
+      <button class="tab-btn" data-tab="quick" type="button">Quick Fetch</button>
+      <button class="tab-btn" data-tab="reference" type="button">Reference</button>
+    </div>
+
+    <!-- EXPLORER -->
+    <div class="tab-panel active" id="tab-explorer">
+      <div class="explorer-scroll">
+        <div class="section">
+          <div class="section-label">Find indicator</div>
+          <p style="font-size: 11px; color: #5f6368; line-height: 1.45; margin: 0 0 8px 0">
+            The API returns <strong>one indicator per request</strong> (<code>i</code>). To
+            compare several indicators, run separate fetches (watch rate limits) or pull
+            lists in Reference.
+          </p>
+          <label for="indNameSearch">Name contains</label>
+          <input type="text" id="indNameSearch" placeholder="e.g. merchandise, tariff" />
+          <div class="opt-row" style="margin-top: 8px">
+            <div class="opt-group">
+              <label for="filterTopic">Topic</label>
+              <select id="filterTopic">
+                <option value="all">All topics</option>
+              </select>
+            </div>
+            <div class="opt-group">
+              <label for="filterFreq">Frequency</label>
+              <select id="filterFreq">
+                <option value="all">All</option>
+              </select>
+            </div>
+          </div>
+          <button
+            class="btn btn-outline btn-sm"
+            type="button"
+            style="margin-top: 8px"
+            onclick="doSearchIndicators()"
+          >
+            Search indicators
+          </button>
+          <div
+            id="indicatorResults"
+            style="
+              margin-top: 8px;
+              max-height: 140px;
+              overflow-y: auto;
+              border: 1px solid #dadce0;
+              border-radius: 4px;
+              background: #fff;
+              font-size: 12px;
+            "
+          ></div>
+          <div class="ref-note" id="selectedIndicatorLabel" style="margin-top: 8px">
+            No indicator selected. Search and click a row to select.
+          </div>
+          <input type="hidden" id="selectedIndicatorCode" value="" />
+        </div>
+
+        <div class="section">
+          <div class="section-label">Economies &amp; period</div>
+          <label for="reporterSearch">Reporting economy</label>
+          <div class="search-select-wrapper">
+            <input
+              type="text"
+              id="reporterSearch"
+              placeholder="Search…"
+              autocomplete="off"
+              onfocus="openDrop('rep')"
+              oninput="filterDrop('rep')"
+            />
+            <div class="dropdown-list" id="repDropdown"></div>
+            <input type="hidden" id="reporterCode" value="" />
+          </div>
+
+          <label for="partnerSearch">Partner economy</label>
+          <div class="search-select-wrapper">
+            <input
+              type="text"
+              id="partnerSearch"
+              placeholder="default"
+              autocomplete="off"
+              onfocus="openDrop('par')"
+              oninput="filterDrop('par')"
+            />
+            <div class="dropdown-list" id="parDropdown"></div>
+            <input type="hidden" id="partnerCode" value="default" />
+          </div>
+
+          <label for="periodSpec">Time period (ps)</label>
+          <input
+            type="text"
+            id="periodSpec"
+            placeholder="e.g. default, all, 2020, 2018-2022, 2010Q1-2012Q3"
+            value="default"
+          />
+          <div class="warning-box" id="periodHint" style="display: block; margin-top: 6px">
+            <strong>Shortcuts:</strong> <code>default</code> = last 8 years of data;
+            <code>all</code> = every year available for this indicator (can be large).
+            <strong>Examples:</strong> one year <code>2020</code>; several years
+            <code>2019,2020,2021</code>; a range <code>2015-2022</code>; quarters
+            <code>2019Q1-2020Q4</code>; months <code>201501-201512</code>. Coverage
+            generally runs from 1948 where data exist.
+          </div>
+
+          <label for="pcSpec">Products / sectors (pc)</label>
+          <select id="pcSpec">
+            <option value="default">default</option>
+            <option value="all">all</option>
+            <option value="HS2">HS2</option>
+            <option value="HS4">HS4</option>
+            <option value="HS6">HS6</option>
+          </select>
+
+          <div class="toggle-row">
+            <span>Include sub-products (spc)</span>
+            <input type="checkbox" id="spcCheck" />
+          </div>
+
+          <label for="maxRecords">Max records</label>
+          <input type="number" id="maxRecords" value="500" min="1" max="50000" />
+        </div>
+      </div>
+
+      <div class="explorer-actions">
+        <button class="btn btn-outline" type="button" style="width: 100%; margin-bottom: 8px" onclick="doDataCount()">
+          Estimate row count
+        </button>
+        <button class="fetch-btn" id="fetchExplorerBtn" type="button" onclick="doExplorerFetch()">
+          Fetch data
+        </button>
+        <div class="spinner-lg" id="explorerSpinner"></div>
+        <div class="status-msg" id="explorerStatus"></div>
+      </div>
+    </div>
+
+    <!-- QUICK FETCH -->
+    <div class="tab-panel" id="tab-quick">
+      <div class="quick-section">
+        <div class="quick-section-title">Reporting economy</div>
+        <div class="search-select-wrapper" style="margin-bottom: 8px">
+          <input
+            type="text"
+            id="qReporterSearch"
+            placeholder="Search economy…"
+            autocomplete="off"
+            onfocus="openDrop('qrep')"
+            oninput="filterDrop('qrep')"
+          />
+          <div class="dropdown-list" id="qrepDropdown"></div>
+          <input type="hidden" id="qReporterCode" value="" />
+        </div>
+
+        <div class="quick-section-title">Time period</div>
+        <p
+          style="
+            font-size: 11px;
+            color: #5f6368;
+            margin: 0 0 8px 0;
+            line-height: 1.45;
+          "
+        >
+          Applies to every Quick Fetch below. <strong>Monthly</strong> series return far more
+          rows than <strong>annual</strong>—use a shorter period if a fetch is slow or hits the
+          row cap.
+        </p>
+        <label for="qPeriodMode">Period</label>
+        <select id="qPeriodMode" style="margin-bottom: 8px">
+          <option value="selected_year">Selected year (use year below)</option>
+          <option value="last_year">Last calendar year</option>
+          <option value="last_5_years" selected>Last 5 years (inclusive)</option>
+          <option value="last_15_years">Last 15 years (inclusive)</option>
+          <option value="all_years">All years (can be very large)</option>
+        </select>
+        <label for="qYear">Year (only when period is &quot;Selected year&quot;)</label>
+        <select id="qYear"></select>
+
+        <div id="quickPresetList" class="quick-grid" style="margin-top: 12px"></div>
+      </div>
+      <div class="explorer-actions">
+        <div class="status-msg" id="quickStatus"></div>
+      </div>
+    </div>
+
+    <!-- REFERENCE -->
+    <div class="tab-panel" id="tab-reference">
+      <div class="ref-area">
+        <h3>World Trade Organization</h3>
+        <p>
+          The <strong>WTO</strong> is the global trade body for negotiated rules and trade
+          statistics. This add-on reads <strong>WTO statistical series</strong> via the
+          Timeseries API and writes results into your sheet for further analysis in Google
+          Sheets.
+        </p>
+
+        <h3>WTO Timeseries API</h3>
+        <p>
+          Uses API <strong>v1</strong>. Register at the API Portal for a key. Rate limits
+          apply (about <strong>1 request/second</strong> for <code>/data</code> and
+          <code>/data_count</code>). Many series cover years <strong>from 1948 onward</strong>
+          when data exist (not every indicator has full history).
+        </p>
+
+        <h3>MFN and tariffs (Quick Fetch)</h3>
+        <p>
+          <strong>MFN</strong> (most-favoured-nation) is the non-discriminatory tariff treatment
+          WTO members must extend to imports from any other member (subject to exceptions such as
+          preferential trade agreements). Indicator <strong>TP_A_0010</strong> is the
+          <strong>simple average MFN applied tariff across all products</strong>: it is a
+          summary measure of how high applied tariffs are on average (not merchandise trade
+          volumes). Higher values generally mean higher protection. Use it for economy-wide
+          comparisons of tariff levels, not for trade value flows.
+        </p>
+
+        <h3>Main query parameters</h3>
+        <table class="ref-table">
+          <tr>
+            <th>Param</th>
+            <th>Role</th>
+          </tr>
+          <tr>
+            <td><code>i</code></td>
+            <td>Indicator code (required)</td>
+          </tr>
+          <tr>
+            <td><code>r</code></td>
+            <td>Reporting economies</td>
+          </tr>
+          <tr>
+            <td><code>p</code></td>
+            <td>Partner economies</td>
+          </tr>
+          <tr>
+            <td><code>ps</code></td>
+            <td>Time period</td>
+          </tr>
+          <tr>
+            <td><code>pc</code></td>
+            <td>Products / sectors</td>
+          </tr>
+        </table>
+
+        <h3>Future APIs</h3>
+        <p>
+          ePing, Quantitative Restrictions, and TFAD use other base URLs on
+          <code>api.wto.org</code>. They can be added in a later version.
+        </p>
+
+        <h3>Links</h3>
+        <div class="ref-links">
+          <a href="https://www.wto.org/" target="_blank" rel="noopener">WTO</a>
+          <a href="https://stats.wto.org/" target="_blank" rel="noopener">WTO Stats</a>
+          <a href="https://apiportal.wto.org/" target="_blank" rel="noopener">WTO API Portal</a>
+        </div>
+
+        <h3>Export reference lists</h3>
+        <p style="font-size: 12px; color: #3c4043; margin-bottom: 8px">
+          Download metadata tables from the API into a new sheet (row counts are approximate).
+        </p>
+        <label for="refExportKind" style="margin-top: 0">List to export</label>
+        <select id="refExportKind" style="margin-bottom: 10px">
+          <option value="indicators">Indicators</option>
+          <option value="products">Products / sectors (full list, may be large)</option>
+          <option value="reporters">Reporting economies</option>
+          <option value="partners">Partner economies</option>
+        </select>
+        <button class="fetch-btn" type="button" onclick="doExportReferenceList()">
+          Export list to sheet
+        </button>
+        <div class="status-msg" id="refStatus"></div>
+      </div>
+
+      <div class="options-panel">
+        <details>
+          <summary>API Key</summary>
+          <div class="options-stack">
+            <div class="opt-group">
+              <label for="apiKeyInput">API key</label>
+              <p style="font-size: 11px; color: #5f6368; margin: 0 0 6px 0; line-height: 1.4">
+                Stored as script property <code>WTO_API_KEY</code> (Ocp-Apim-Subscription-Key from
+                <a href="https://apiportal.wto.org/" target="_blank" rel="noopener">apiportal.wto.org</a>).
+              </p>
+              <div style="display: flex; gap: 4px">
+                <input
+                  id="apiKeyInput"
+                  type="password"
+                  placeholder="Paste your API key"
+                  style="flex: 1"
+                  autocomplete="off"
+                />
+                <button class="btn btn-primary btn-sm" type="button" onclick="saveApiKey()">
+                  Save
+                </button>
+              </div>
+              <div style="display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap">
+                <button class="btn btn-outline btn-sm" type="button" onclick="testConnection()">
+                  Test connection
+                </button>
+              </div>
+            </div>
+            <div class="status-msg" id="keyStatus" style="text-align: left"></div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <script>
+      var reportersAll = [];
+      var partnersAll = [];
+      var selectedInd = "";
+
+      document.addEventListener("DOMContentLoaded", function () {
+        var tabBtns = document.querySelectorAll(".tab-btn");
+        var tabPanels = document.querySelectorAll(".tab-panel");
+        for (var i = 0; i < tabBtns.length; i++) {
+          tabBtns[i].addEventListener("click", function () {
+            var target = this.getAttribute("data-tab");
+            for (var j = 0; j < tabBtns.length; j++) {
+              tabBtns[j].classList.remove("active");
+              tabPanels[j].classList.remove("active");
+            }
+            this.classList.add("active");
+            document.getElementById("tab-" + target).classList.add("active");
+          });
+        }
+
+        google.script.run.withSuccessHandler(renderQuickPresets).wto_getQuickPresetDefinitions();
+        google.script.run.withSuccessHandler(initBootstrap).withFailureHandler(showKeyError).wto_getExplorerBootstrap();
+      });
+
+      function renderQuickPresets(defs) {
+        var host = document.getElementById("quickPresetList");
+        if (!host) {
+          return;
+        }
+        host.innerHTML = "";
+        var sections = (defs && defs.sections) || [];
+        if (!sections.length) {
+          return;
+        }
+        sections.forEach(function (sec, idx) {
+          var title = document.createElement("div");
+          title.className = "quick-section-title";
+          title.style.marginTop = idx === 0 ? "0" : "14px";
+          title.textContent = sec.title || sec.id || "";
+          host.appendChild(title);
+          (sec.presets || []).forEach(function (d) {
+            var div = document.createElement("div");
+            div.className = "quick-item";
+            div.innerHTML =
+              '<div class="quick-item-info"><div class="quick-item-name">' +
+              esc(d.title) +
+              '</div><div class="quick-item-desc">' +
+              esc(d.subtitle) +
+              '</div></div><button class="btn btn-primary btn-sm" type="button">Fetch</button>';
+            div.querySelector("button").onclick = function () {
+              runQuick(d.id);
+            };
+            host.appendChild(div);
+          });
+        });
+      }
+
+      function showKeyError(e) {
+        setMsg("keyStatus", String(e.message || e), "error");
+      }
+
+      function initBootstrap(data) {
+        if (data.needsKey) {
+          setMsg(
+            "keyStatus",
+            "Save your API key below to load metadata and fetch data.",
+            "loading",
+          );
+          return;
+        }
+        setMsg("keyStatus", "API key on file. Metadata loaded.", "success");
+        fillSelect(document.getElementById("filterTopic"), data.topics, "id", "name", true);
+        fillSelect(document.getElementById("filterFreq"), data.frequencies, "code", "name", true);
+        loadReportersPartners();
+        populateYears();
+      }
+
+      function fillSelect(el, items, valKey, labelKey, allOpt) {
+        var h = allOpt ? '<option value="all">All</option>' : "";
+        if (items && items.length) {
+          items.forEach(function (it) {
+            var v = it[valKey];
+            var lab = it[labelKey] || v;
+            h += '<option value="' + esc(v) + '">' + esc(lab) + "</option>";
+          });
+        }
+        el.innerHTML = h;
+      }
+
+      function esc(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function loadReportersPartners() {
+        google.script.run
+          .withSuccessHandler(function (r) {
+            reportersAll = r || [];
+            google.script.run
+              .withSuccessHandler(function (p) {
+                partnersAll = p || [];
+              })
+              .withFailureHandler(function (e) {
+                setMsg("explorerStatus", String(e.message || e), "error");
+              })
+              .wto_clientGetPartners();
+          })
+          .withFailureHandler(function (e) {
+            setMsg("explorerStatus", String(e.message || e), "error");
+          })
+          .wto_clientGetReporters();
+      }
+
+      function populateYears() {
+        google.script.run
+          .withSuccessHandler(function (years) {
+            var sel = document.getElementById("qYear");
+            var y = new Date().getFullYear();
+            var opts = "";
+            for (var i = 0; i < 16; i++) {
+              var yy = y - i;
+              opts += '<option value="' + yy + '">' + yy + "</option>";
+            }
+            if (years && years.length) {
+              opts = "";
+              years.forEach(function (row) {
+                var code = row.year != null ? row.year : row.code || row;
+                opts += '<option value="' + code + '">' + code + "</option>";
+              });
+            }
+            sel.innerHTML = opts || '<option value="2022">2022</option>';
+          })
+          .wto_clientGetYears();
+      }
+
+      function saveApiKey() {
+        var v = document.getElementById("apiKeyInput").value;
+        setMsg("keyStatus", "Saving…", "loading");
+        google.script.run
+          .withSuccessHandler(function () {
+            setMsg("keyStatus", "Saved. Loading metadata…", "success");
+            google.script.run.withSuccessHandler(initBootstrap).wto_getExplorerBootstrap();
+          })
+          .withFailureHandler(function (e) {
+            setMsg("keyStatus", String(e.message || e), "error");
+          })
+          .wto_saveWtoApiKey(v);
+      }
+
+      function testConnection() {
+        setMsg("keyStatus", "Testing…", "loading");
+        google.script.run
+          .withSuccessHandler(function (r) {
+            setMsg("keyStatus", r.message || "OK", "success");
+          })
+          .withFailureHandler(function (e) {
+            setMsg("keyStatus", String(e.message || e), "error");
+          })
+          .wto_testWtoConnection();
+      }
+
+      function doSearchIndicators() {
+        var filters = {
+          name: document.getElementById("indNameSearch").value,
+          t: document.getElementById("filterTopic").value,
+          frq: document.getElementById("filterFreq").value,
+        };
+        if (filters.t === "all") {
+          delete filters.t;
+        }
+        if (filters.frq === "all") {
+          delete filters.frq;
+        }
+        setMsg("explorerStatus", "Searching…", "loading");
+        google.script.run
+          .withSuccessHandler(function (list) {
+            setMsg("explorerStatus", "", "");
+            var box = document.getElementById("indicatorResults");
+            box.innerHTML = "";
+            if (!list || !list.length) {
+              box.innerHTML =
+                '<div style="padding:8px;color:#5f6368">No indicators found.</div>';
+              return;
+            }
+            list.slice(0, 80).forEach(function (ind) {
+              var row = document.createElement("div");
+              row.className = "dropdown-item";
+              row.innerHTML =
+                "<strong>" +
+                esc(ind.code) +
+                "</strong> " +
+                esc(ind.name || "") +
+                ' <span class="item-id">' +
+                esc(ind.frequencyLabel || "") +
+                "</span>";
+              row.onclick = function () {
+                selectedInd = ind.code;
+                document.getElementById("selectedIndicatorCode").value = ind.code;
+                document.getElementById("selectedIndicatorLabel").textContent =
+                  "Selected: " + ind.code + " — " + (ind.name || "");
+              };
+              box.appendChild(row);
+            });
+          })
+          .withFailureHandler(function (e) {
+            setMsg("explorerStatus", String(e.message || e), "error");
+          })
+          .wto_clientSearchIndicators(filters);
+      }
+
+      function openDrop(kind) {
+        filterDrop(kind);
+        var el = kind === "rep" ? "repDropdown" : kind === "par" ? "parDropdown" : "qrepDropdown";
+        document.getElementById(el).classList.add("show");
+      }
+
+      function filterDrop(kind) {
+        var inputId =
+          kind === "rep"
+            ? "reporterSearch"
+            : kind === "par"
+              ? "partnerSearch"
+              : "qReporterSearch";
+        var dropId =
+          kind === "rep" ? "repDropdown" : kind === "par" ? "parDropdown" : "qrepDropdown";
+        var q = document.getElementById(inputId).value.toLowerCase();
+        var list = kind === "qrep" || kind === "rep" ? reportersAll : partnersAll;
+        var box = document.getElementById(dropId);
+        box.innerHTML = "";
+        var n = 0;
+        list.forEach(function (item) {
+          var name = (item.name || "").toLowerCase();
+          var code = String(item.code || "");
+          if (q && name.indexOf(q) === -1 && code.indexOf(q) === -1) {
+            return;
+          }
+          var row = document.createElement("div");
+          row.className = "dropdown-item";
+          row.textContent = code + " — " + (item.name || "");
+          row.onclick = function () {
+            document.getElementById(inputId).value = item.name || code;
+            if (kind === "rep") {
+              document.getElementById("reporterCode").value = code;
+            } else if (kind === "par") {
+              document.getElementById("partnerCode").value = code;
+            } else {
+              document.getElementById("qReporterCode").value = code;
+            }
+            box.classList.remove("show");
+          };
+          box.appendChild(row);
+          n++;
+          if (n > 100) {
+            return;
+          }
+        });
+        box.classList.add("show");
+      }
+
+      document.addEventListener("click", function (e) {
+        if (!e.target.closest(".search-select-wrapper")) {
+          ["repDropdown", "parDropdown", "qrepDropdown"].forEach(function (id) {
+            var d = document.getElementById(id);
+            if (d) {
+              d.classList.remove("show");
+            }
+          });
+        }
+      });
+
+      function doDataCount() {
+        var params = gatherExplorerParams();
+        if (!params.i) {
+          setMsg("explorerStatus", "Select an indicator first.", "error");
+          return;
+        }
+        setLoading(true);
+        google.script.run
+          .withSuccessHandler(function (res) {
+            setLoading(false);
+            setMsg(
+              "explorerStatus",
+              "Estimated rows: " + res.count + " (max request will be " + params.max + ")",
+              "success",
+            );
+          })
+          .withFailureHandler(function (e) {
+            setLoading(false);
+            setMsg("explorerStatus", String(e.message || e), "error");
+          })
+          .wto_clientGetDataCount(params);
+      }
+
+      function gatherExplorerParams() {
+        function t(v, d) {
+          v = (v || "").trim();
+          return v || d;
+        }
+        return {
+          i: (document.getElementById("selectedIndicatorCode").value || "").trim(),
+          r: t(document.getElementById("reporterCode").value, "all"),
+          p: t(document.getElementById("partnerCode").value, "default"),
+          ps: t(document.getElementById("periodSpec").value, "default"),
+          pc: t(document.getElementById("pcSpec").value, "default"),
+          spc: document.getElementById("spcCheck").checked,
+          max: parseInt(document.getElementById("maxRecords").value, 10) || 500,
+        };
+      }
+
+      function doExplorerFetch() {
+        var params = gatherExplorerParams();
+        if (!params.i) {
+          setMsg("explorerStatus", "Select an indicator first.", "error");
+          return;
+        }
+        setLoading(true);
+        google.script.run
+          .withSuccessHandler(function (res) {
+            setLoading(false);
+            setMsg(
+              "explorerStatus",
+              "Done: " + res.rowCount + " data rows in sheet «" + res.sheetName + "»",
+              "success",
+            );
+          })
+          .withFailureHandler(function (e) {
+            setLoading(false);
+            setMsg("explorerStatus", String(e.message || e), "error");
+          })
+          .wto_runWtoExplorerFetch(params);
+      }
+
+      function setLoading(on) {
+        var sp = document.getElementById("explorerSpinner");
+        var btn = document.getElementById("fetchExplorerBtn");
+        sp.style.display = on ? "block" : "none";
+        btn.disabled = on;
+      }
+
+      function setMsg(id, text, cls) {
+        var el = document.getElementById(id);
+        el.textContent = text;
+        el.className = "status-msg" + (cls ? " " + cls : "");
+      }
+
+      function runQuick(presetId) {
+        var rep = document.getElementById("qReporterCode").value;
+        var yr = document.getElementById("qYear").value;
+        var periodMode = document.getElementById("qPeriodMode").value;
+        setMsg("quickStatus", "Fetching…", "loading");
+        google.script.run
+          .withSuccessHandler(function (res) {
+            setMsg(
+              "quickStatus",
+              "Done: " + res.rowCount + " rows in «" + res.sheetName + "»",
+              "success",
+            );
+          })
+          .withFailureHandler(function (e) {
+            setMsg("quickStatus", String(e.message || e), "error");
+          })
+          .wto_runWtoQuickFetch(presetId, rep, yr, periodMode);
+      }
+
+      function doExportReferenceList() {
+        var kind = document.getElementById("refExportKind").value;
+        setMsg("refStatus", "Exporting…", "loading");
+        google.script.run
+          .withSuccessHandler(function (res) {
+            setMsg(
+              "refStatus",
+              "Wrote " + (res.rowCount + 1) + " rows to «" + res.sheetName + "»",
+              "success",
+            );
+          })
+          .withFailureHandler(function (e) {
+            setMsg("refStatus", String(e.message || e), "error");
+          })
+          .wto_exportReferenceListToSheet(kind);
+      }
+    </script>
+  </body>
+</html>

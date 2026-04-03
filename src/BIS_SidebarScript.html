@@ -1,0 +1,691 @@
+<script>
+(function () {
+  'use strict';
+
+  // ─── State ───
+  var state = {
+    dataflows: [],
+    categories: {},
+    selectedDataflow: null,
+    structure: null,
+    loading: false
+  };
+
+  // ─── Init ───
+  document.addEventListener('DOMContentLoaded', function () {
+    bindEvents();
+    bindTabs();
+    bindQuickFetch();
+    // Load categories first, then dataflows (categories needed for grouping)
+    loadCategories(function () {
+      loadDataflows();
+    });
+    loadRecentQueries();
+  });
+
+  function bindEvents() {
+    document.getElementById('datasetSearch').addEventListener('input', filterDatasets);
+    document.getElementById('fetchBtn').addEventListener('click', fetchData);
+    document.getElementById('exportCodesBtn').addEventListener('click', doExplorerCodes);
+    document.getElementById('toggleAdvanced').addEventListener('click', toggleAdvanced);
+  }
+
+  // ─── Tab navigation ───
+  function bindTabs() {
+    var tabs = document.querySelectorAll('.tab');
+    for (var i = 0; i < tabs.length; i++) {
+      tabs[i].addEventListener('click', function () {
+        var target = this.dataset.tab;
+        // Deactivate all tabs
+        var allTabs = document.querySelectorAll('.tab');
+        for (var j = 0; j < allTabs.length; j++) allTabs[j].classList.remove('active');
+        var allContents = document.querySelectorAll('.tab-content');
+        for (var k = 0; k < allContents.length; k++) allContents[k].classList.remove('active');
+        // Activate target
+        this.classList.add('active');
+        var targetEl = document.getElementById('tab-' + target);
+        if (targetEl) targetEl.classList.add('active');
+        // Populate reference tab on first visit
+        if (target === 'reference') populateRefCategories();
+      });
+    }
+  }
+
+  // ─── Load categories config ───
+  function loadCategories(callback) {
+    google.script.run
+      .withSuccessHandler(function (cats) {
+        state.categories = cats || {};
+        if (callback) callback();
+      })
+      .withFailureHandler(function () {
+        // fallback: uncategorized
+        if (callback) callback();
+      })
+      .bis_getCategoryConfig();
+  }
+
+  // ─── Load dataflows ───
+  function loadDataflows() {
+    showLoading('dataflowLoading', 'Loading datasets...');
+    google.script.run
+      .withSuccessHandler(onDataflowsLoaded)
+      .withFailureHandler(function (err) {
+        hideLoading('dataflowLoading');
+        showStatus('statusArea', 'Failed to load datasets: ' + err.message, 'error');
+      })
+      .bis_getDataflows();
+  }
+
+  function onDataflowsLoaded(dataflows) {
+    hideLoading('dataflowLoading');
+    state.dataflows = dataflows || [];
+    renderDataflowList();
+  }
+
+  function renderDataflowList() {
+    var container = document.getElementById('datasetListContainer');
+    container.innerHTML = '';
+
+    // Build lookup: dataflowId → category using flexible matching
+    var cats = state.categories;
+    var catNames = Object.keys(cats);
+
+    function findCategory(dfId) {
+      for (var c = 0; c < catNames.length; c++) {
+        var items = cats[catNames[c]];
+        for (var i = 0; i < items.length; i++) {
+          var catId = items[i].id;
+          if (dfId === catId || dfId === 'WS_' + catId || dfId.indexOf('WS_' + catId) === 0) {
+            return catNames[c];
+          }
+        }
+      }
+      return null;
+    }
+
+    // Group dataflows by category
+    var groups = {};
+    var uncategorized = [];
+    for (var d = 0; d < state.dataflows.length; d++) {
+      var df = state.dataflows[d];
+      var cat = findCategory(df.id);
+      if (cat) {
+        if (!groups[cat]) groups[cat] = [];
+        groups[cat].push(df);
+      } else {
+        uncategorized.push(df);
+      }
+    }
+
+    // Render categorized groups in category order
+    for (var ci = 0; ci < catNames.length; ci++) {
+      var catName = catNames[ci];
+      if (groups[catName] && groups[catName].length > 0) {
+        container.appendChild(createCategoryGroup(catName, groups[catName]));
+      }
+    }
+
+    // Render uncategorized
+    if (uncategorized.length > 0) {
+      container.appendChild(createCategoryGroup('Other', uncategorized));
+    }
+  }
+
+  function createCategoryGroup(name, dataflows) {
+    var group = document.createElement('div');
+    group.className = 'category-group';
+
+    var label = document.createElement('div');
+    label.className = 'category-label';
+    label.textContent = name + ' (' + dataflows.length + ')';
+    label.addEventListener('click', function () {
+      label.classList.toggle('expanded');
+      items.classList.toggle('show');
+    });
+
+    var items = document.createElement('div');
+    items.className = 'category-items';
+
+    for (var i = 0; i < dataflows.length; i++) {
+      items.appendChild(createDatasetItem(dataflows[i]));
+    }
+
+    group.appendChild(label);
+    group.appendChild(items);
+    return group;
+  }
+
+  function createDatasetItem(df) {
+    var item = document.createElement('div');
+    item.className = 'dataset-item';
+    item.dataset.id = df.id;
+    item.dataset.name = (df.name || '').toLowerCase();
+    item.innerHTML = escapeHtml(df.name) + ' <span class="dataset-id">' + escapeHtml(df.id) + '</span>';
+    item.addEventListener('click', function () { selectDataflow(df); });
+    return item;
+  }
+
+  function selectDataflow(df) {
+    // Clear previous selection
+    var prev = document.querySelector('.dataset-item.selected');
+    if (prev) prev.classList.remove('selected');
+
+    // Highlight new
+    var items = document.querySelectorAll('.dataset-item');
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].dataset.id === df.id) {
+        items[i].classList.add('selected');
+        break;
+      }
+    }
+
+    state.selectedDataflow = df;
+    loadStructure(df.id);
+  }
+
+  // ─── Filter datasets ───
+  function filterDatasets() {
+    var query = this.value.toLowerCase().trim();
+    var items = document.querySelectorAll('.dataset-item');
+    var groups = document.querySelectorAll('.category-group');
+
+    for (var i = 0; i < items.length; i++) {
+      var name = items[i].dataset.name || '';
+      var id = (items[i].dataset.id || '').toLowerCase();
+      var match = !query || name.indexOf(query) >= 0 || id.indexOf(query) >= 0;
+      items[i].style.display = match ? '' : 'none';
+    }
+
+    // Show/hide category groups based on visible children
+    for (var g = 0; g < groups.length; g++) {
+      var visibleItems = groups[g].querySelectorAll('.dataset-item:not([style*="display: none"])');
+      groups[g].style.display = visibleItems.length > 0 ? '' : 'none';
+      // Auto-expand when searching
+      if (query) {
+        groups[g].querySelector('.category-label').classList.add('expanded');
+        groups[g].querySelector('.category-items').classList.add('show');
+      }
+    }
+  }
+
+  // ─── Load structure ───
+  function loadStructure(dataflowId) {
+    var dimSection = document.getElementById('dimensionSection');
+    var dimContainer = document.getElementById('dimensionContainer');
+    dimContainer.innerHTML = '';
+    dimSection.classList.remove('hidden');
+
+    showLoading('dimLoading', 'Loading dimensions...');
+    document.getElementById('fetchBtn').disabled = true;
+    document.getElementById('exportCodesBtn').disabled = true;
+
+    google.script.run
+      .withSuccessHandler(function (structure) {
+        state.structure = structure;
+        renderDimensions(structure);
+        // Now load availability to filter to valid values only
+        showLoading('dimLoading', 'Checking data availability...');
+        google.script.run
+          .withSuccessHandler(function (availMap) {
+            hideLoading('dimLoading');
+            applyAvailabilityFilter(availMap);
+            document.getElementById('fetchBtn').disabled = false;
+            document.getElementById('exportCodesBtn').disabled = false;
+            document.getElementById('fetchSection').classList.remove('hidden');
+          })
+          .withFailureHandler(function () {
+            // Availability failed — still usable, just show all values
+            hideLoading('dimLoading');
+            document.getElementById('fetchBtn').disabled = false;
+            document.getElementById('exportCodesBtn').disabled = false;
+            document.getElementById('fetchSection').classList.remove('hidden');
+          })
+          .bis_getDataflowAvailability(dataflowId);
+      })
+      .withFailureHandler(function (err) {
+        hideLoading('dimLoading');
+        showStatus('statusArea', 'Failed to load structure: ' + err.message, 'error');
+      })
+      .bis_getDataflowStructure(dataflowId);
+  }
+
+  function renderDimensions(structure) {
+    var container = document.getElementById('dimensionContainer');
+    container.innerHTML = '';
+    var dims = structure.dimensions || [];
+
+    for (var i = 0; i < dims.length; i++) {
+      var dim = dims[i];
+      if (dim.id === 'TIME_PERIOD') continue; // handled by period inputs
+
+      var group = document.createElement('div');
+      group.className = 'dim-group';
+
+      var label = document.createElement('div');
+      label.className = 'dim-label';
+      label.textContent = dim.name ? dim.name + ' (' + dim.id + ')' : dim.id;
+
+      group.appendChild(label);
+
+      // Filter input for dimensions with many values
+      if (dim.values && dim.values.length > 15) {
+        var filter = document.createElement('input');
+        filter.className = 'dim-filter';
+        filter.type = 'text';
+        filter.placeholder = 'Filter ' + (dim.name || dim.id) + '...';
+        filter.dataset.dimId = dim.id;
+        filter.addEventListener('input', filterDimValues);
+        group.appendChild(filter);
+      }
+
+      var select = document.createElement('select');
+      select.className = 'dim-select';
+      select.id = 'dim_' + dim.id;
+      select.multiple = true;
+      select.size = Math.min(dim.values ? dim.values.length + 1 : 4, 6);
+
+      // Add "All" option
+      var allOpt = document.createElement('option');
+      allOpt.value = '';
+      allOpt.textContent = '(All)';
+      allOpt.selected = true;
+      select.appendChild(allOpt);
+
+      if (dim.values) {
+        for (var v = 0; v < dim.values.length; v++) {
+          var opt = document.createElement('option');
+          opt.value = dim.values[v].id;
+          opt.textContent = dim.values[v].name
+            ? dim.values[v].name + ' [' + dim.values[v].id + ']'
+            : dim.values[v].id;
+          opt.dataset.search = (dim.values[v].name + ' ' + dim.values[v].id).toLowerCase();
+          select.appendChild(opt);
+        }
+      }
+
+      group.appendChild(select);
+      container.appendChild(group);
+    }
+  }
+
+  function filterDimValues(e) {
+    var query = e.target.value.toLowerCase().trim();
+    var dimId = e.target.dataset.dimId;
+    var select = document.getElementById('dim_' + dimId);
+    if (!select) return;
+
+    var opts = select.options;
+    for (var i = 1; i < opts.length; i++) { // skip "(All)"
+      var search = opts[i].dataset.search || '';
+      opts[i].style.display = (!query || search.indexOf(query) >= 0) ? '' : 'none';
+    }
+  }
+
+  // ─── Apply availability filter ───
+  function applyAvailabilityFilter(availMap) {
+    if (!availMap || !state.structure) return;
+    var dims = state.structure.dimensions || [];
+
+    for (var i = 0; i < dims.length; i++) {
+      var dim = dims[i];
+      if (dim.id === 'TIME_PERIOD') continue;
+      var available = availMap[dim.id];
+      if (!available) continue; // no constraint info — keep all
+
+      var select = document.getElementById('dim_' + dim.id);
+      if (!select) continue;
+
+      var hiddenCount = 0;
+      for (var j = 1; j < select.options.length; j++) { // skip "(All)"
+        var opt = select.options[j];
+        if (available.indexOf(opt.value) === -1) {
+          opt.style.display = 'none';
+          opt.selected = false;
+          opt.dataset.unavailable = '1';
+          hiddenCount++;
+        }
+      }
+
+      // Update label to show available count
+      var group = select.parentElement;
+      if (group) {
+        var label = group.querySelector('.dim-label');
+        var totalVisible = select.options.length - 1 - hiddenCount;
+        if (label && hiddenCount > 0) {
+          label.textContent = (dim.name ? dim.name + ' (' + dim.id + ')' : dim.id) +
+            ' — ' + totalVisible + ' available';
+        }
+      }
+    }
+  }
+
+  // ─── Build SDMX key ───
+  function buildKey() {
+    if (!state.structure) return '*';
+    var dims = state.structure.dimensions || [];
+    var parts = [];
+
+    for (var i = 0; i < dims.length; i++) {
+      if (dims[i].id === 'TIME_PERIOD') continue;
+      var select = document.getElementById('dim_' + dims[i].id);
+      if (!select) {
+        parts.push('');
+        continue;
+      }
+
+      var selected = [];
+      for (var j = 0; j < select.options.length; j++) {
+        if (select.options[j].selected && select.options[j].value !== '') {
+          selected.push(select.options[j].value);
+        }
+      }
+
+      // If empty or "(All)" selected, use wildcard (empty string in SDMX key)
+      parts.push(selected.length > 0 ? selected.join('+') : '');
+    }
+
+    return parts.join('.');
+  }
+
+  // ─── Fetch data (Explorer tab) ───
+  function fetchData() {
+    if (!state.selectedDataflow) {
+      showStatus('statusArea', 'Please select a dataset first.', 'error');
+      return;
+    }
+
+    var key = buildKey();
+    var options = {
+      lastNObservations: parseInt(document.getElementById('lastNObs').value, 10) || 100,
+      newSheet: document.getElementById('outputTarget').value === 'new',
+      includeMetadata: document.getElementById('includeMetadata').checked,
+      startPeriod: document.getElementById('startPeriod').value || undefined,
+      endPeriod: document.getElementById('endPeriod').value || undefined
+    };
+
+    document.getElementById('fetchBtn').disabled = true;
+    showStatus('statusArea', '<span class="spinner"></span> Fetching data...', 'info');
+
+    google.script.run
+      .withSuccessHandler(function (result) {
+        document.getElementById('fetchBtn').disabled = false;
+        showStatus('statusArea',
+          'Written ' + result.rows + ' rows &times; ' + result.cols + ' columns to "' +
+          escapeHtml(result.sheetName) + '".',
+          'success'
+        );
+        loadRecentQueries();
+      })
+      .withFailureHandler(function (err) {
+        document.getElementById('fetchBtn').disabled = false;
+        showStatus('statusArea', 'Error: ' + err.message, 'error');
+      })
+      .bis_fetchBisData(state.selectedDataflow.id, key, options);
+  }
+
+  // ─── Explorer Codes export ───
+  function doExplorerCodes() {
+    if (!state.selectedDataflow) {
+      showStatus('statusArea', 'Please select a dataset first.', 'error');
+      return;
+    }
+    var btn = document.getElementById('exportCodesBtn');
+    btn.disabled = true;
+    showStatus('statusArea', '<span class="spinner"></span> Exporting codebook...', 'info');
+
+    google.script.run
+      .withSuccessHandler(function (result) {
+        btn.disabled = false;
+        showStatus('statusArea',
+          'Codebook written to "' + escapeHtml(result.sheetName) + '" (' + result.rows + ' rows).',
+          'success');
+      })
+      .withFailureHandler(function (err) {
+        btn.disabled = false;
+        showStatus('statusArea', 'Error: ' + err.message, 'error');
+      })
+      .bis_exportCodebook(state.selectedDataflow.id);
+  }
+
+  // ─── Quick Fetch ───
+  function bindQuickFetch() {
+    var items = document.querySelectorAll('.quick-item');
+    for (var i = 0; i < items.length; i++) {
+      var item = items[i];
+      var fetchBtn = item.querySelector('.quick-fetch');
+      var codesBtn = item.querySelector('.quick-codes');
+
+      fetchBtn.addEventListener('click', (function (el) {
+        return function () {
+          var flow = el.dataset.flow;
+          var lastN = el.dataset.last ? parseInt(el.dataset.last, 10) : 0;
+          var key = el.dataset.key || '*';
+          var label = el.querySelector('.quick-item-name').textContent;
+          quickFetch(flow, key, lastN, label);
+        };
+      })(item));
+
+      codesBtn.addEventListener('click', (function (el) {
+        return function () {
+          var flow = el.dataset.flow;
+          var label = el.querySelector('.quick-item-name').textContent;
+          quickCodes(flow, label);
+        };
+      })(item));
+    }
+  }
+
+  function setQuickButtonsDisabled(disabled) {
+    var btns = document.querySelectorAll('.quick-item .btn-sm');
+    for (var i = 0; i < btns.length; i++) btns[i].disabled = disabled;
+  }
+
+  function quickFetch(dataflowId, key, lastN, label) {
+    setQuickButtonsDisabled(true);
+    showStatus('quickStatusArea', '<span class="spinner"></span> Fetching ' + escapeHtml(label) + '...', 'info');
+
+    google.script.run
+      .withSuccessHandler(function (result) {
+        setQuickButtonsDisabled(false);
+        showStatus('quickStatusArea',
+          'Written ' + result.rows + ' rows &times; ' + result.cols + ' columns to "' +
+          escapeHtml(result.sheetName) + '".',
+          'success'
+        );
+      })
+      .withFailureHandler(function (err) {
+        setQuickButtonsDisabled(false);
+        showStatus('quickStatusArea', 'Error: ' + err.message, 'error');
+      })
+      .bis_fetchBisData(dataflowId, key, {
+        lastNObservations: lastN,
+        newSheet: true,
+        includeMetadata: true
+      });
+  }
+
+  function quickCodes(dataflowId, label) {
+    setQuickButtonsDisabled(true);
+    showStatus('quickStatusArea', '<span class="spinner"></span> Exporting codes for ' + escapeHtml(label) + '...', 'info');
+
+    google.script.run
+      .withSuccessHandler(function (result) {
+        setQuickButtonsDisabled(false);
+        showStatus('quickStatusArea',
+          'Codebook written to "' + escapeHtml(result.sheetName) + '" (' + result.rows + ' rows).',
+          'success');
+      })
+      .withFailureHandler(function (err) {
+        setQuickButtonsDisabled(false);
+        showStatus('quickStatusArea', 'Error: ' + err.message, 'error');
+      })
+      .bis_exportCodebook(dataflowId);
+  }
+
+  // ─── Export all dataflows (Reference tab) ───
+  document.getElementById('exportDfBtn').addEventListener('click', function () {
+    var btn = document.getElementById('exportDfBtn');
+    btn.disabled = true;
+    btn.textContent = 'Exporting...';
+    showStatus('refStatusArea', '<span class="spinner"></span> Exporting all datasets...', 'info');
+
+    google.script.run
+      .withSuccessHandler(function (result) {
+        btn.disabled = false;
+        btn.textContent = 'Export All Datasets to Sheet';
+        showStatus('refStatusArea',
+          'Written to "' + escapeHtml(result.sheetName) + '" (' + result.rows + ' rows).',
+          'success');
+      })
+      .withFailureHandler(function (err) {
+        btn.disabled = false;
+        btn.textContent = 'Export All Datasets to Sheet';
+        showStatus('refStatusArea', 'Error: ' + err.message, 'error');
+      })
+      .bis_exportDataflows();
+  });
+
+  // ─── Reference tab ───
+  var refPopulated = false;
+  function populateRefCategories() {
+    if (refPopulated) return;
+    refPopulated = true;
+    var container = document.getElementById('refCategories');
+    if (!container) return;
+    var cats = state.categories;
+    var catNames = Object.keys(cats);
+    var html = '';
+    for (var c = 0; c < catNames.length; c++) {
+      html += '<div class="ref-category"><div class="ref-cat-name">' + escapeHtml(catNames[c]) + '</div>';
+      html += '<div class="ref-cat-items">';
+      var items = cats[catNames[c]];
+      for (var i = 0; i < items.length; i++) {
+        var topic = items[i].topic || items[i].id;
+        var url = 'https://data.bis.org/topics/' + encodeURIComponent(topic);
+        html += '<a href="' + url + '" target="_blank" class="ref-topic-link">' +
+          escapeHtml(items[i].name) + '</a>' +
+          ' <span class="dataset-id">' + escapeHtml(items[i].id) + '</span>';
+        if (i < items.length - 1) html += '<br>';
+      }
+      html += '</div></div>';
+    }
+    container.innerHTML = html || '<em>Categories not loaded yet.</em>';
+  }
+
+  // ─── Advanced toggle ───
+  function toggleAdvanced() {
+    var panel = document.getElementById('advancedPanel');
+    var link = document.getElementById('toggleAdvanced');
+    panel.classList.toggle('hidden');
+    link.textContent = panel.classList.contains('hidden')
+      ? 'Show advanced options'
+      : 'Hide advanced options';
+  }
+
+  // ─── Recent queries ───
+  function loadRecentQueries() {
+    google.script.run
+      .withSuccessHandler(renderRecentQueries)
+      .withFailureHandler(function () { /* silent fail */ })
+      .bis_getRecentQueries();
+  }
+
+  function renderRecentQueries(queries) {
+    var section = document.getElementById('recentSection');
+    var container = document.getElementById('recentContainer');
+    container.innerHTML = '';
+
+    if (!queries || queries.length === 0) {
+      section.classList.add('hidden');
+      return;
+    }
+
+    section.classList.remove('hidden');
+    for (var i = 0; i < queries.length; i++) {
+      var q = queries[i];
+      var item = document.createElement('div');
+      item.className = 'recent-item';
+      item.innerHTML =
+        '<span class="recent-id">' + escapeHtml(q.dataflowId) + '</span>' +
+        '<span class="recent-time">' + formatTime(q.timestamp) + '</span>';
+      item.dataset.index = i;
+      item.addEventListener('click', (function (query) {
+        return function () { rerunQuery(query); };
+      })(q));
+      container.appendChild(item);
+    }
+  }
+
+  function rerunQuery(query) {
+    // Find and select the dataflow
+    for (var i = 0; i < state.dataflows.length; i++) {
+      if (state.dataflows[i].id === query.dataflowId) {
+        selectDataflow(state.dataflows[i]);
+        break;
+      }
+    }
+    // Trigger fetch with stored options
+    setTimeout(function () {
+      var options = query.options || {};
+      options.newSheet = true;
+      options.includeMetadata = true;
+
+      document.getElementById('fetchBtn').disabled = true;
+      showStatus('statusArea', '<span class="spinner"></span> Re-running query...', 'info');
+
+      google.script.run
+        .withSuccessHandler(function (result) {
+          document.getElementById('fetchBtn').disabled = false;
+          showStatus('statusArea',
+            'Written ' + result.rows + ' rows &times; ' + result.cols + ' columns to "' +
+            escapeHtml(result.sheetName) + '".',
+            'success'
+          );
+        })
+        .withFailureHandler(function (err) {
+          document.getElementById('fetchBtn').disabled = false;
+          showStatus('statusArea', 'Error: ' + err.message, 'error');
+        })
+        .bis_fetchBisData(query.dataflowId, query.key, options);
+    }, 500);
+  }
+
+  // ─── UI helpers ───
+  function showLoading(id, msg) {
+    var el = document.getElementById(id);
+    if (el) {
+      el.innerHTML = '<span class="loading-text"><span class="spinner"></span>' + escapeHtml(msg) + '</span>';
+      el.classList.remove('hidden');
+    }
+  }
+
+  function hideLoading(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.add('hidden');
+  }
+
+  function showStatus(areaId, html, type) {
+    var area = document.getElementById(areaId);
+    if (area) area.innerHTML = '<div class="status-msg ' + type + '">' + html + '</div>';
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+  }
+
+  function formatTime(iso) {
+    if (!iso) return '';
+    try {
+      var d = new Date(iso);
+      return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch (e) {
+      return iso;
+    }
+  }
+
+})();
+</script>

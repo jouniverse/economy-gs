@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: #333; padding: 20px; }
+    h2 { font-size: 16px; margin-bottom: 8px; }
+    p.desc { color: #555; margin-bottom: 16px; line-height: 1.5; }
+    .section { margin-bottom: 20px; }
+    .section h3 { font-size: 14px; margin-bottom: 8px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+    .api-list { columns: 2; column-gap: 12px; margin-bottom: 12px; }
+    .api-list li { font-size: 12px; margin-bottom: 2px; }
+    .key-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .key-row label { flex: 0 0 110px; font-weight: bold; font-size: 12px; }
+    .key-row input { flex: 1; padding: 5px 8px; border: 1px solid #ccc; border-radius: 3px; font-size: 12px; }
+    .key-row .status { flex: 0 0 18px; text-align: center; font-size: 14px; }
+    .btn { padding: 7px 18px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; }
+    .btn-primary { background: #1a73e8; color: #fff; }
+    .btn-primary:hover { background: #1558b0; }
+    .btn-secondary { background: #f1f3f4; color: #333; }
+    .btn-secondary:hover { background: #ddd; }
+    .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+    .msg { margin-top: 10px; font-size: 12px; min-height: 16px; }
+    .msg.ok { color: #188038; }
+    .msg.err { color: #c5221f; }
+    ul { list-style: disc inside; }
+    a { color: #1a73e8; }
+  </style>
+</head>
+<body>
+
+  <h2>Economy Data</h2>
+  <p class="desc">
+    A unified Google Sheets add-on for fetching economic data from
+    multiple international sources.
+  </p>
+
+  <div class="section">
+    <h3>Supported APIs</h3>
+    <ul class="api-list">
+      <li>BIS</li>
+      <li>ECB</li>
+      <li>FRED</li>
+      <li>IMF</li>
+      <li>OECD</li>
+      <li>World Bank</li>
+      <li>WTO</li>
+      <li>UN Comtrade</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h3>API Keys</h3>
+    <p style="font-size:12px; color:#555; margin-bottom:10px;">
+      Some APIs require a personal API key. Enter them below and click <b>Save</b>.
+      A <span style="color:green">&#10003;</span> means the key is already stored.
+    </p>
+
+    <div class="key-row">
+      <label>FRED</label>
+      <input type="password" id="fredKey" placeholder="FRED API key">
+      <span class="status" id="fredStatus"></span>
+    </div>
+    <div class="key-row">
+      <label>WTO</label>
+      <input type="password" id="wtoKey" placeholder="WTO API key">
+      <span class="status" id="wtoStatus"></span>
+    </div>
+    <div class="key-row">
+      <label>UN Comtrade</label>
+      <input type="password" id="comtradeKey" placeholder="UN Comtrade API key">
+      <span class="status" id="comtradeStatus"></span>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>Useful Links</h3>
+    <ul style="font-size:12px; line-height:1.8;">
+      <li><a href="https://fred.stlouisfed.org/docs/api/api_key.html" target="_blank">Get a FRED API key</a></li>
+      <li><a href="https://apiportal.wto.org/" target="_blank">Get a WTO API key</a></li>
+      <li><a href="https://comtradeplus.un.org/" target="_blank">Get a UN Comtrade API key</a></li>
+    </ul>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-secondary" onclick="google.script.host.close()">Close</button>
+    <button class="btn btn-primary" id="saveBtn" onclick="doSave()">Save</button>
+  </div>
+  <div class="msg" id="msg"></div>
+
+<script>
+  (function () {
+    google.script.run
+      .withSuccessHandler(applyStatus)
+      .withFailureHandler(function (e) { setMsg(e.message, "err"); })
+      .getSettingsData();
+  })();
+
+  function applyStatus(data) {
+    document.getElementById("fredStatus").innerHTML     = data.fredKey     ? '<span style="color:green">&#10003;</span>' : '';
+    document.getElementById("wtoStatus").innerHTML      = data.wtoKey      ? '<span style="color:green">&#10003;</span>' : '';
+    document.getElementById("comtradeStatus").innerHTML = data.comtradeKey ? '<span style="color:green">&#10003;</span>' : '';
+  }
+
+  function doSave() {
+    var keys = {};
+    var f = document.getElementById("fredKey").value;
+    var w = document.getElementById("wtoKey").value;
+    var c = document.getElementById("comtradeKey").value;
+    if (f) keys.fredKey     = f;
+    if (w) keys.wtoKey      = w;
+    if (c) keys.comtradeKey = c;
+    if (!Object.keys(keys).length) { setMsg("Enter at least one key.", "err"); return; }
+    document.getElementById("saveBtn").disabled = true;
+    google.script.run
+      .withSuccessHandler(function (data) {
+        applyStatus(data);
+        document.getElementById("fredKey").value = "";
+        document.getElementById("wtoKey").value = "";
+        document.getElementById("comtradeKey").value = "";
+        setMsg("Keys saved.", "ok");
+        document.getElementById("saveBtn").disabled = false;
+      })
+      .withFailureHandler(function (e) {
+        setMsg(e.message, "err");
+        document.getElementById("saveBtn").disabled = false;
+      })
+      .saveSettings(keys);
+  }
+
+  function setMsg(text, cls) {
+    var el = document.getElementById("msg");
+    el.textContent = text;
+    el.className = "msg " + (cls || "");
+  }
+</script>
+</body>
+</html>

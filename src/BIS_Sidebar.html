@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <?!= include('BIS_SidebarStyles') ?>
+</head>
+<body>
+
+  <!-- Tab navigation -->
+  <div class="tab-bar">
+    <div class="tab active" data-tab="explorer">Explorer</div>
+    <div class="tab" data-tab="quickfetch">Quick Fetch</div>
+    <div class="tab" data-tab="reference">Reference</div>
+  </div>
+
+  <!-- ═══ Explorer tab ═══ -->
+  <div id="tab-explorer" class="tab-content active">
+
+    <!-- Dataset selection -->
+    <div class="section">
+      <div class="section-header">Select dataset</div>
+      <input type="text" id="datasetSearch" class="search-box" placeholder="Search datasets..." />
+      <div id="dataflowLoading"></div>
+      <div id="datasetListContainer" class="dataset-list"></div>
+    </div>
+
+    <!-- Dimension filters -->
+    <div id="dimensionSection" class="section hidden">
+      <div class="section-header">Filter dimensions</div>
+      <div id="dimLoading"></div>
+      <div id="dimensionContainer" class="dim-container"></div>
+    </div>
+
+    <!-- Fetch options & button -->
+    <div id="fetchSection" class="section hidden">
+      <div class="section-header">Options</div>
+
+      <div class="options-row">
+        <label for="lastNObs">Max observations</label>
+        <input type="number" id="lastNObs" value="100" min="1" max="10000" />
+      </div>
+
+      <div class="options-row">
+        <label for="outputTarget">Output to</label>
+        <select id="outputTarget">
+          <option value="new" selected>New sheet</option>
+          <option value="active">Active sheet</option>
+        </select>
+      </div>
+
+      <div class="checkbox-row">
+        <input type="checkbox" id="includeMetadata" checked />
+        <label for="includeMetadata">Include metadata header</label>
+      </div>
+
+      <a id="toggleAdvanced" class="toggle-link">Show advanced options</a>
+
+      <div id="advancedPanel" class="hidden">
+        <div class="period-row">
+          <div class="period-field">
+            <label for="startPeriod">Start period</label>
+            <input type="text" id="startPeriod" placeholder="e.g. 2020-Q1" />
+          </div>
+          <div class="period-field">
+            <label for="endPeriod">End period</label>
+            <input type="text" id="endPeriod" placeholder="e.g. 2025-Q4" />
+          </div>
+        </div>
+      </div>
+
+      <button id="fetchBtn" class="btn btn-primary" disabled>Fetch Data</button>
+      <button id="exportCodesBtn" class="btn btn-outline" style="margin-top:6px" disabled>Export Codes to Sheet</button>
+
+      <div id="statusArea" class="status-area"></div>
+    </div>
+
+    <!-- Recent queries -->
+    <div id="recentSection" class="section hidden">
+      <div class="section-header">Recent queries</div>
+      <div id="recentContainer"></div>
+    </div>
+
+  </div>
+
+  <!-- ═══ Quick Fetch tab ═══ -->
+  <div id="tab-quickfetch" class="tab-content">
+
+    <div class="section">
+      <div class="section-header">One-click data queries</div>
+      <div class="quick-grid">
+        <div class="quick-item" data-flow="WS_CBPOL" data-key="M" data-last="12">
+          <div class="quick-item-info">
+            <div class="quick-item-name">Central Bank Policy Rates</div>
+            <div class="quick-item-dataset">WS_CBPOL · Monthly, last 12 obs</div>
+          </div>
+          <div class="quick-item-btns">
+            <button class="btn-sm btn-outline quick-codes">Codes</button>
+            <button class="btn-sm btn-primary quick-fetch">Fetch</button>
+          </div>
+        </div>
+        <div class="quick-item" data-flow="WS_EER" data-key="M" data-last="12">
+          <div class="quick-item-info">
+            <div class="quick-item-name">Effective Exchange Rates</div>
+            <div class="quick-item-dataset">WS_EER · Monthly, last 12 obs</div>
+          </div>
+          <div class="quick-item-btns">
+            <button class="btn-sm btn-outline quick-codes">Codes</button>
+            <button class="btn-sm btn-primary quick-fetch">Fetch</button>
+          </div>
+        </div>
+        <div class="quick-item" data-flow="WS_XRU" data-key="D" data-last="30">
+          <div class="quick-item-info">
+            <div class="quick-item-name">Exchange Rates (USD)</div>
+            <div class="quick-item-dataset">WS_XRU · Daily, last 30 obs</div>
+          </div>
+          <div class="quick-item-btns">
+            <button class="btn-sm btn-outline quick-codes">Codes</button>
+            <button class="btn-sm btn-primary quick-fetch">Fetch</button>
+          </div>
+        </div>
+        <div class="quick-item" data-flow="WS_TC" data-last="8">
+          <div class="quick-item-info">
+            <div class="quick-item-name">Credit to Non-Financial Sector</div>
+            <div class="quick-item-dataset">WS_TC · Quarterly, last 8 obs</div>
+          </div>
+          <div class="quick-item-btns">
+            <button class="btn-sm btn-outline quick-codes">Codes</button>
+            <button class="btn-sm btn-primary quick-fetch">Fetch</button>
+          </div>
+        </div>
+        <div class="quick-item" data-flow="WS_SPP" data-last="8">
+          <div class="quick-item-info">
+            <div class="quick-item-name">Residential Property Prices</div>
+            <div class="quick-item-dataset">WS_SPP · Quarterly, last 8 obs</div>
+          </div>
+          <div class="quick-item-btns">
+            <button class="btn-sm btn-outline quick-codes">Codes</button>
+            <button class="btn-sm btn-primary quick-fetch">Fetch</button>
+          </div>
+        </div>
+        <div class="quick-item" data-flow="WS_LONG_CPI" data-key="M" data-last="12">
+          <div class="quick-item-info">
+            <div class="quick-item-name">Consumer Prices</div>
+            <div class="quick-item-dataset">WS_LONG_CPI · Monthly, last 12 obs</div>
+          </div>
+          <div class="quick-item-btns">
+            <button class="btn-sm btn-outline quick-codes">Codes</button>
+            <button class="btn-sm btn-primary quick-fetch">Fetch</button>
+          </div>
+        </div>
+        <div class="quick-item" data-flow="WS_DSR" data-last="8">
+          <div class="quick-item-info">
+            <div class="quick-item-name">Debt Service Ratios</div>
+            <div class="quick-item-dataset">WS_DSR · Quarterly, last 8 obs</div>
+          </div>
+          <div class="quick-item-btns">
+            <button class="btn-sm btn-outline quick-codes">Codes</button>
+            <button class="btn-sm btn-primary quick-fetch">Fetch</button>
+          </div>
+        </div>
+        <div class="quick-item" data-flow="WS_GLI" data-last="8">
+          <div class="quick-item-info">
+            <div class="quick-item-name">Global Liquidity Indicators</div>
+            <div class="quick-item-dataset">WS_GLI · Quarterly, last 8 obs</div>
+          </div>
+          <div class="quick-item-btns">
+            <button class="btn-sm btn-outline quick-codes">Codes</button>
+            <button class="btn-sm btn-primary quick-fetch">Fetch</button>
+          </div>
+        </div>
+        <div class="quick-item" data-flow="WS_LBS_D_PUB" data-key="Q.S.C.A.TO1.A.5J.A.5A.A.5J.A">
+          <div class="quick-item-info">
+            <div class="quick-item-name">Locational Banking Statistics</div>
+            <div class="quick-item-dataset">WS_LBS_D_PUB · Quarterly, from 1977</div>
+          </div>
+          <div class="quick-item-btns">
+            <button class="btn-sm btn-outline quick-codes">Codes</button>
+            <button class="btn-sm btn-primary quick-fetch">Fetch</button>
+          </div>
+        </div>
+        <div class="quick-item" data-flow="WS_CBS_PUB" data-key="Q.S.5A.4B.F.C.A.A.TO1.A.5J">
+          <div class="quick-item-info">
+            <div class="quick-item-name">Consolidated Banking Statistics</div>
+            <div class="quick-item-dataset">WS_CBS_PUB · Quarterly, from 1983</div>
+          </div>
+          <div class="quick-item-btns">
+            <button class="btn-sm btn-outline quick-codes">Codes</button>
+            <button class="btn-sm btn-primary quick-fetch">Fetch</button>
+          </div>
+        </div>
+        <div class="quick-item" data-flow="WS_NA_SEC_DSS" data-key="Q.N...S1.S1.N.L.LE.F3.T._Z.USD._T.N.V.N._T" data-last="8">
+          <div class="quick-item-info">
+            <div class="quick-item-name">Debt Securities Statistics</div>
+            <div class="quick-item-dataset">WS_NA_SEC_DSS · Quarterly, last 8 obs</div>
+          </div>
+          <div class="quick-item-btns">
+            <button class="btn-sm btn-outline quick-codes">Codes</button>
+            <button class="btn-sm btn-primary quick-fetch">Fetch</button>
+          </div>
+        </div>
+        <div class="quick-item" data-flow="WS_DEBT_SEC2_PUB" data-key="Q..3P.1.1..A.A.TO1.A.A.A.A.A.I" data-last="8">
+          <div class="quick-item-info">
+            <div class="quick-item-name">International Debt Securities</div>
+            <div class="quick-item-dataset">WS_DEBT_SEC2_PUB · Quarterly, last 8 obs</div>
+          </div>
+          <div class="quick-item-btns">
+            <button class="btn-sm btn-outline quick-codes">Codes</button>
+            <button class="btn-sm btn-primary quick-fetch">Fetch</button>
+          </div>
+        </div>
+        <div class="quick-item" data-flow="WS_CREDIT_GAP" data-last="8">
+          <div class="quick-item-info">
+            <div class="quick-item-name">Credit-to-GDP Gaps</div>
+            <div class="quick-item-dataset">WS_CREDIT_GAP · Quarterly, last 8 obs</div>
+          </div>
+          <div class="quick-item-btns">
+            <button class="btn-sm btn-outline quick-codes">Codes</button>
+            <button class="btn-sm btn-primary quick-fetch">Fetch</button>
+          </div>
+        </div>
+        <div class="quick-item" data-flow="WS_XTD_DERIV" data-last="8">
+          <div class="quick-item-info">
+            <div class="quick-item-name">Exchange-Traded Derivatives</div>
+            <div class="quick-item-dataset">WS_XTD_DERIV · Mixed (A/M/Q), last 8 obs</div>
+          </div>
+          <div class="quick-item-btns">
+            <button class="btn-sm btn-outline quick-codes">Codes</button>
+            <button class="btn-sm btn-primary quick-fetch">Fetch</button>
+          </div>
+        </div>
+        <div class="quick-item" data-flow="WS_OTC_DERIV2" data-key="H.A.U.T.5J.L.5J.A.TO1.TO1.A.A.3.C">
+          <div class="quick-item-info">
+            <div class="quick-item-name">OTC Derivatives Outstanding</div>
+            <div class="quick-item-dataset">WS_OTC_DERIV2 · Semi-annual, from 2004</div>
+          </div>
+          <div class="quick-item-btns">
+            <button class="btn-sm btn-outline quick-codes">Codes</button>
+            <button class="btn-sm btn-primary quick-fetch">Fetch</button>
+          </div>
+        </div>
+        <div class="quick-item" data-flow="WS_DER_OTC_TOV" data-key="A.U.A.B.5J.A.5J.A.TO1.TO1.A.A.3.A">
+          <div class="quick-item-info">
+            <div class="quick-item-name">Triennial Survey</div>
+            <div class="quick-item-dataset">WS_DER_OTC_TOV · Triennial, from 1989</div>
+          </div>
+          <div class="quick-item-btns">
+            <button class="btn-sm btn-outline quick-codes">Codes</button>
+            <button class="btn-sm btn-primary quick-fetch">Fetch</button>
+          </div>
+        </div>
+        <div class="quick-item" data-flow="WS_CPP" data-last="8">
+          <div class="quick-item-info">
+            <div class="quick-item-name">Commercial Property Prices</div>
+            <div class="quick-item-dataset">WS_CPP · Quarterly, last 8 obs</div>
+          </div>
+          <div class="quick-item-btns">
+            <button class="btn-sm btn-outline quick-codes">Codes</button>
+            <button class="btn-sm btn-primary quick-fetch">Fetch</button>
+          </div>
+        </div>
+        <div class="quick-item" data-flow="WS_CBTA" data-key="M" data-last="12">
+          <div class="quick-item-info">
+            <div class="quick-item-name">Central Bank Total Assets</div>
+            <div class="quick-item-dataset">WS_CBTA · Monthly, last 12 obs</div>
+          </div>
+          <div class="quick-item-btns">
+            <button class="btn-sm btn-outline quick-codes">Codes</button>
+            <button class="btn-sm btn-primary quick-fetch">Fetch</button>
+          </div>
+        </div>
+        <div class="quick-item" data-flow="WS_CPMI_CT1" data-last="5">
+          <div class="quick-item-info">
+            <div class="quick-item-name">Retail Payments &amp; Currency</div>
+            <div class="quick-item-dataset">WS_CPMI_CT1 · Annual, last 5 obs</div>
+          </div>
+          <div class="quick-item-btns">
+            <button class="btn-sm btn-outline quick-codes">Codes</button>
+            <button class="btn-sm btn-primary quick-fetch">Fetch</button>
+          </div>
+        </div>
+        <div class="quick-item" data-flow="WS_CPMI_SYSTEMS" data-last="5">
+          <div class="quick-item-info">
+            <div class="quick-item-name">Financial Market Infrastructures</div>
+            <div class="quick-item-dataset">WS_CPMI_SYSTEMS · Annual, last 5 obs</div>
+          </div>
+          <div class="quick-item-btns">
+            <button class="btn-sm btn-outline quick-codes">Codes</button>
+            <button class="btn-sm btn-primary quick-fetch">Fetch</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="quickStatusArea" class="status-area"></div>
+
+  </div>
+
+  <!-- ═══ Reference tab ═══ -->
+  <div id="tab-reference" class="tab-content">
+
+    <div class="section">
+      <div class="section-header">BIS Dataset Categories</div>
+      <div id="refCategories" class="ref-content"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">Analytics Functions</div>
+      <div class="ref-content">
+        <div class="ref-func">
+          <div class="ref-func-name">=BIS_GROWTH_RATE(range, periods)</div>
+          <div class="ref-func-desc">Period-over-period growth rate (%). Default periods = 1.</div>
+          <div class="ref-func-example">Example: <code>=BIS_GROWTH_RATE(B2:B100, 1)</code></div>
+        </div>
+        <div class="ref-func">
+          <div class="ref-func-name">=BIS_MOVING_AVG(range, window)</div>
+          <div class="ref-func-desc">Simple moving average over a rolling window.</div>
+          <div class="ref-func-example">Example: <code>=BIS_MOVING_AVG(B2:B100, 4)</code> (4-quarter MA)</div>
+        </div>
+        <div class="ref-func">
+          <div class="ref-func-name">=BIS_YOY_CHANGE(range, periodsPerYear)</div>
+          <div class="ref-func-desc">Year-over-year change (%). Set periodsPerYear to 12 (monthly), 4 (quarterly), or 1 (annual).</div>
+          <div class="ref-func-example">Example: <code>=BIS_YOY_CHANGE(B2:B100, 12)</code></div>
+        </div>
+        <div class="ref-func">
+          <div class="ref-func-name">=BIS_SUMMARY(range)</div>
+          <div class="ref-func-desc">Summary statistics: Count, Min, Max, Mean, Median, Std Dev.</div>
+          <div class="ref-func-example">Example: <code>=BIS_SUMMARY(B2:B100)</code></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">Tips</div>
+      <div class="ref-content ref-tips">
+        <ul>
+          <li>Use the <strong>Explorer</strong> tab for full control over dataset selection and dimension filtering.</li>
+          <li>Use <strong>Quick Fetch</strong> for common one-click queries.</li>
+          <li>In dimension filters, hold <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> to select multiple values.</li>
+          <li>Leave a dimension set to "(All)" to fetch all values for that dimension.</li>
+          <li>Use the analytics functions on fetched data columns for quick analysis.</li>
+          <li>The <em>Start/End period</em> fields accept formats like <code>2020</code>, <code>2020-Q1</code>, <code>2020-01</code>.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">Common Filter Codes</div>
+      <div class="ref-content">
+        <div class="ref-func">
+          <div class="ref-func-name">Measures</div>
+          <div class="ref-func-desc">
+            <code>628</code> &mdash; Index, 2010 = 100<br>
+            <code>771</code> &mdash; Year-on-year change in %
+          </div>
+        </div>
+        <div class="ref-func">
+          <div class="ref-func-name">Reference Areas</div>
+          <div class="ref-func-desc">
+            <code>XM</code> &mdash; Euro area<br>
+            <code>4T</code> &mdash; Advanced Economies<br>
+            <code>5R</code> &mdash; Emerging Market Economies<br>
+            <code>5A</code> &mdash; All Reporting Economies
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ref-actions">
+      <button class="btn btn-outline" id="exportDfBtn">Export All Datasets to Sheet</button>
+    </div>
+
+    <div id="refStatusArea" class="status-area" style="padding:0 12px;"></div>
+
+  </div>
+
+  <?!= include('BIS_SidebarScript') ?>
+</body>
+</html>

@@ -1,0 +1,1737 @@
+<!doctype html>
+<html>
+  <head>
+    <base target="_top" />
+    <style>
+      /* ------------------------------------------------------------------ */
+      /* Reset & Layout                                                     */
+      /* ------------------------------------------------------------------ */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Google Sans", Roboto, Arial, sans-serif;
+        font-size: 13px;
+        color: #202124;
+        background: #f8f9fa;
+      }
+
+      .sidebar {
+        padding: 10px 12px 60px 12px;
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Tabs                                                               */
+      /* ------------------------------------------------------------------ */
+      .tab-bar {
+        display: flex;
+        background: #fff;
+        border-bottom: 1px solid #dadce0;
+      }
+      .tab-btn {
+        flex: 1;
+        padding: 10px 4px;
+        border: none;
+        background: none;
+        font-size: 12px;
+        font-weight: 500;
+        color: #5f6368;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: color 0.15s, border-color 0.15s;
+      }
+      .tab-btn:hover {
+        color: #202124;
+      }
+      .tab-btn.active {
+        color: #4285f4;
+        border-bottom-color: #4285f4;
+      }
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Sections                                                           */
+      /* ------------------------------------------------------------------ */
+      .section {
+        margin-bottom: 14px;
+      }
+      .section-label {
+        font-size: 11px;
+        font-weight: 500;
+        color: #5f6368;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Inputs                                                             */
+      /* ------------------------------------------------------------------ */
+      input[type="text"],
+      select {
+        width: 100%;
+        padding: 7px 8px;
+        font-size: 12px;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        outline: none;
+        transition: border-color 0.15s;
+      }
+      input[type="text"]:focus,
+      select:focus {
+        border-color: #4285f4;
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Chips                                                              */
+      /* ------------------------------------------------------------------ */
+      .chip-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin: 4px 0 6px 0;
+        min-height: 24px;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        background: #d2e3fc;
+        color: #1967d2;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        max-width: 100%;
+      }
+      .chip .chip-remove {
+        margin-left: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 13px;
+        line-height: 1;
+        color: #1967d2;
+        opacity: 0.6;
+      }
+      .chip .chip-remove:hover {
+        opacity: 1;
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Dropdown list                                                      */
+      /* ------------------------------------------------------------------ */
+      .dropdown-list {
+        max-height: 180px;
+        overflow-y: auto;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        background: #fff;
+        margin-top: -4px;
+        margin-bottom: 6px;
+      }
+      .dropdown-list.hidden {
+        display: none;
+      }
+      .dropdown-item {
+        padding: 6px 8px;
+        cursor: pointer;
+        font-size: 12px;
+        border-bottom: 1px solid #f0f0f0;
+      }
+      .dropdown-item:hover {
+        background: #e8f0fe;
+      }
+      .dropdown-item .item-code {
+        font-family: "Roboto Mono", monospace;
+        font-weight: 600;
+        color: #4285f4;
+      }
+      .dropdown-item .item-name {
+        color: #5f6368;
+        margin-left: 4px;
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Quick buttons row (country groups)                                 */
+      /* ------------------------------------------------------------------ */
+      .quick-btns {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin: 4px 0;
+      }
+      .quick-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        padding: 4px 10px;
+        border-radius: 14px;
+        border: 1px solid #dadce0;
+        background: #fff;
+        cursor: pointer;
+        color: #5f6368;
+        white-space: nowrap;
+        transition: background 0.15s, color 0.15s, border-color 0.15s;
+      }
+      .quick-btn:hover {
+        background: #e8f0fe;
+        border-color: #4285f4;
+        color: #4285f4;
+      }
+      .quick-btn.selected {
+        background: #4285f4;
+        color: #fff;
+        border-color: #4285f4;
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Radio & checkbox groups                                            */
+      /* ------------------------------------------------------------------ */
+      .radio-group,
+      .check-group {
+        margin: 4px 0;
+      }
+      .radio-group label,
+      .check-group label {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        color: #3c4043;
+        padding: 3px 0;
+        cursor: pointer;
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Inline fields                                                      */
+      /* ------------------------------------------------------------------ */
+      .inline-fields {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        font-size: 11px;
+        margin-top: 10px;
+        margin-bottom: 4px;
+      }
+      .inline-fields select,
+      .inline-fields input {
+        flex: 1;
+      }
+      .inline-fields span {
+        font-size: 12px;
+        color: #80868b;
+        white-space: nowrap;
+      }
+
+      /* Country count badge */
+      .count-badge {
+        font-size: 11px;
+        color: #80868b;
+        margin-left: 4px;
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Primary action button                                              */
+      /* ------------------------------------------------------------------ */
+      .action-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 16px;
+        background: #4285f4;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        margin-top: 8px;
+        transition: background 0.15s;
+      }
+      .action-btn:hover {
+        background: #3367d6;
+      }
+      .action-btn:disabled {
+        background: #a8c7fa;
+        cursor: default;
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Secondary buttons (quick-item style)                               */
+      /* ------------------------------------------------------------------ */
+      .secondary-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        padding: 7px 10px;
+        background: #fff;
+        border: 1px solid #dadce0;
+        border-radius: 6px;
+        font-size: 13px;
+        cursor: pointer;
+        margin-bottom: 4px;
+        color: #3c4043;
+        transition: box-shadow 0.15s;
+      }
+      .secondary-btn:hover {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Status bar & spinner                                               */
+      /* ------------------------------------------------------------------ */
+      .status-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 8px 12px;
+        background: #fff;
+        border-top: 1px solid #dadce0;
+        font-size: 12px;
+        z-index: 10;
+      }
+      .status-bar.hidden {
+        display: none;
+      }
+      .status-bar.error {
+        color: #d93025;
+        background: #fce8e6;
+      }
+      .status-bar.success {
+        color: #188038;
+        background: #e6f4ea;
+      }
+      .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #dadce0;
+        border-top-color: #4285f4;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        vertical-align: middle;
+        margin-right: 4px;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Browse tab                                                         */
+      /* ------------------------------------------------------------------ */
+      .topic-list-item {
+        padding: 7px 8px;
+        cursor: pointer;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 12px;
+        color: #3c4043;
+      }
+      .topic-list-item:hover {
+        background: #e8f0fe;
+      }
+      .topic-indicators {
+        padding-left: 12px;
+        display: none;
+      }
+      .topic-indicators.open {
+        display: block;
+      }
+      .ind-list-item {
+        padding: 5px 6px;
+        cursor: pointer;
+        font-size: 11px;
+        border-bottom: 1px solid #fafafa;
+      }
+      .ind-list-item:hover {
+        background: #e8f0fe;
+      }
+      .ind-list-item .ind-code {
+        font-family: "Roboto Mono", monospace;
+        color: #4285f4;
+        font-weight: 600;
+        font-size: 11px;
+      }
+      .indicator-detail {
+        background: #fff;
+        border: 1px solid #dadce0;
+        padding: 10px 12px;
+        border-radius: 8px;
+        margin-top: 8px;
+        font-size: 12px;
+      }
+      .indicator-detail .detail-title {
+        font-weight: 600;
+        margin-bottom: 4px;
+        color: #202124;
+      }
+      .indicator-detail .detail-note {
+        color: #5f6368;
+        font-size: 11px;
+        line-height: 1.5;
+      }
+      .detail-use-btn {
+        margin-top: 8px;
+        font-size: 11px;
+        padding: 5px 12px;
+        background: #4285f4;
+        color: #fff;
+        border-color: #4285f4;
+      }
+      .detail-use-btn:hover {
+        background: #3367d6;
+        border-color: #3367d6;
+        color: #fff;
+      }
+
+      /* Preset selector */
+      .preset-selector {
+        margin: 4px 0 8px 0;
+      }
+      .preset-selector select {
+        font-size: 12px;
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Country multi-select                                               */
+      /* ------------------------------------------------------------------ */
+      .country-multi {
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        background: #fff;
+        margin: 4px 0;
+      }
+      .country-multi.hidden {
+        display: none;
+      }
+      .country-multi label {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 8px;
+        font-size: 11px;
+        cursor: pointer;
+        border-bottom: 1px solid #fafafa;
+        color: #3c4043;
+      }
+      .country-multi label:hover {
+        background: #e8f0fe;
+      }
+
+      /* ------------------------------------------------------------------ */
+      /* Reference tab                                                      */
+      /* ------------------------------------------------------------------ */
+      .ref-area h3 {
+        font-size: 13px;
+        font-weight: 600;
+        color: #202124;
+        margin: 16px 0 6px;
+      }
+      .ref-area h3:first-child {
+        margin-top: 2px;
+      }
+      .ref-area p {
+        font-size: 12px;
+        color: #3c4043;
+        line-height: 1.5;
+        margin-bottom: 8px;
+      }
+      .ref-links {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        margin-bottom: 10px;
+      }
+      .ref-links a {
+        font-size: 12px;
+        color: #4285f4;
+        text-decoration: none;
+        line-height: 1.4;
+      }
+      .ref-links a:hover {
+        text-decoration: underline;
+      }
+      .ref-tip {
+        font-size: 11px;
+        color: #5f6368;
+        line-height: 1.5;
+        padding: 6px 8px;
+        background: #fff;
+        border: 1px solid #dadce0;
+        border-radius: 6px;
+        margin-bottom: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Tab bar (outside sidebar for edge-to-edge styling) -->
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="explorer">Explorer</button>
+      <button class="tab-btn" data-tab="browse">Browse</button>
+      <button class="tab-btn" data-tab="reference">Reference</button>
+    </div>
+
+    <div class="sidebar">
+
+      <!-- ============================================================= -->
+      <!-- TAB 1: Explorer                                               -->
+      <!-- ============================================================= -->
+      <div id="tab-explorer" class="tab-content active">
+        <!-- Indicator search -->
+        <div class="section">
+          <div class="section-label">Indicators</div>
+          <div class="preset-selector">
+            <select id="presetSelect">
+              <option value="">— Presets —</option>
+              <option value="economic">Economic Basics</option>
+              <option value="demographics">Demographics</option>
+              <option value="health">Health</option>
+              <option value="education">Education</option>
+              <option value="trade">Trade</option>
+            </select>
+          </div>
+          <input
+            type="text"
+            id="indicatorSearch"
+            placeholder="Search indicators (e.g. GDP, population)…"
+          />
+          <div id="indicatorDropdown" class="dropdown-list hidden"></div>
+          <div id="indicatorChips" class="chip-container"></div>
+        </div>
+
+        <!-- Country selection -->
+        <div class="section">
+          <div class="section-label">
+            Countries <span id="countryCount" class="count-badge"></span>
+          </div>
+          <div class="quick-btns">
+            <button class="quick-btn" data-group="all">All</button>
+            <button class="quick-btn" data-group="g7">G7</button>
+            <button class="quick-btn" data-group="g20">G20</button>
+            <button class="quick-btn" data-group="brics">BRICS</button>
+            <button class="quick-btn" data-group="eu">EU</button>
+            <button class="quick-btn" data-group="nordics">Nordics</button>
+            <button class="quick-btn" data-group="oecd">OECD</button>
+            <button
+              class="quick-btn"
+              data-group="none"
+              style="color: #d93025; border-color: #d93025"
+            >
+              Clear
+            </button>
+          </div>
+          <div class="inline-fields" style="margin-bottom: 4px">
+            <select id="regionFilter">
+              <option value="">Filter by region…</option>
+            </select>
+            <select id="incomeFilter">
+              <option value="">Filter by income…</option>
+            </select>
+          </div>
+          <input
+            type="text"
+            id="countrySearch"
+            placeholder="Search countries…"
+          />
+          <div id="countryMulti" class="country-multi hidden"></div>
+        </div>
+
+        <!-- Time range -->
+        <div class="section">
+          <div class="section-label">Time Period</div>
+          <div class="radio-group">
+            <label
+              ><input type="radio" name="timeMode" value="range" checked /> Year
+              Range</label
+            >
+            <label
+              ><input type="radio" name="timeMode" value="mrv" /> Most Recent
+              Values</label
+            >
+          </div>
+          <div id="timeRangeFields" class="inline-fields">
+            <select id="startYear"></select>
+            <span>to</span>
+            <select id="endYear"></select>
+          </div>
+          <div id="timeMrvFields" class="inline-fields" style="display: none">
+            <input
+              type="number"
+              id="mrvCount"
+              min="1"
+              max="30"
+              value="1"
+              style="width: 60px"
+            />
+            <label style="font-size: 12px"
+              ><input type="checkbox" id="mrvNonEmpty" /> Non-empty only</label
+            >
+          </div>
+        </div>
+
+        <!-- Output options -->
+        <div class="section">
+          <div class="section-label">Output</div>
+          <div class="radio-group">
+            <label
+              ><input type="radio" name="format" value="long" checked /> Long
+              (one row per observation)</label
+            >
+            <label
+              ><input type="radio" name="format" value="wide_years" /> Wide
+              (years as columns)</label
+            >
+            <label
+              ><input type="radio" name="format" value="wide_countries" /> Wide
+              (countries as columns)</label
+            >
+            <label
+              ><input type="radio" name="format" value="wide_indicators" /> Wide
+              (indicators as columns)</label
+            >
+          </div>
+          <div class="radio-group" style="margin-top: 6px">
+            <label
+              ><input type="radio" name="destination" value="new" checked /> New
+              sheet</label
+            >
+            <label
+              ><input type="radio" name="destination" value="active" /> Active
+              sheet at cursor</label
+            >
+          </div>
+          <div class="check-group">
+            <label
+              ><input type="checkbox" id="includeMetadata" checked /> Include
+              metadata row</label
+            >
+            <label
+              ><input type="checkbox" id="skipAggregates" /> Skip aggregate
+              economies</label
+            >
+          </div>
+        </div>
+
+        <!-- Fetch button -->
+        <button class="action-btn" id="fetchBtn" onclick="handleFetch()">
+          Fetch Data
+        </button>
+      </div>
+
+      <!-- ============================================================= -->
+      <!-- TAB 2: Browse                                                 -->
+      <!-- ============================================================= -->
+      <div id="tab-browse" class="tab-content">
+        <div class="section">
+          <div class="section-label">Topics</div>
+          <div id="topicList"></div>
+        </div>
+        <div
+          id="indicatorDetail"
+          class="indicator-detail"
+          style="display: none"
+        >
+          <div class="detail-title" id="detailTitle"></div>
+          <div
+            style="color: #1a73e8; font-size: 11px; margin-bottom: 4px"
+            id="detailCode"
+          ></div>
+          <div class="detail-note" id="detailNote"></div>
+          <div
+            style="font-size: 11px; color: #888; margin-top: 4px"
+            id="detailOrg"
+          ></div>
+          <button
+            class="quick-btn detail-use-btn"
+            onclick="useIndicatorFromBrowse()"
+          >
+            Use in Fetch
+          </button>
+        </div>
+      </div>
+
+      <!-- ============================================================= -->
+      <!-- TAB 3: Reference                                              -->
+      <!-- ============================================================= -->
+      <div id="tab-reference" class="tab-content">
+        <div class="section">
+          <div class="section-label">Inject Reference Sheets</div>
+          <button class="secondary-btn" onclick="writeRef('countries')">
+            📋 All Countries
+          </button>
+          <button class="secondary-btn" onclick="writeRef('regions')">
+            🌍 All Regions
+          </button>
+          <button class="secondary-btn" onclick="writeRef('topics')">
+            📂 All Topics
+          </button>
+          <button class="secondary-btn" onclick="writeRef('sources')">
+            📦 All Sources
+          </button>
+          <button class="secondary-btn" onclick="writeRef('all_indicators')">
+            📊 All Indicators
+          </button>
+        </div>
+        <div class="section">
+          <div class="section-label">Search & Inject Indicators</div>
+          <div class="inline-fields">
+            <input
+              type="text"
+              id="refIndicatorQuery"
+              placeholder="Search keyword…"
+            />
+            <button
+              class="quick-btn"
+              onclick="writeRef('indicators')"
+              style="padding: 7px 12px"
+            >
+              Go
+            </button>
+          </div>
+        </div>
+
+        <div class="ref-area">
+          <h3>About the World Bank</h3>
+          <p>
+            The <a href="https://www.worldbank.org/ext/en/home" target="_blank"
+            style="color:#4285f4;text-decoration:none;">World Bank</a> is an
+            international financial institution that provides loans, grants, and
+            technical assistance to developing countries. It maintains one of the
+            most comprehensive collections of development data in the world,
+            covering over 1,400 indicators for 200+ economies.
+          </p>
+
+          <h3>World Bank Indicators API</h3>
+          <p>
+            This add-on uses the
+            <strong>World Bank Indicators API v2</strong> to query data directly
+            into your spreadsheet. The API is free, open, and requires no
+            authentication. Data is available under the
+            <a href="https://www.worldbank.org/en/about/legal/terms-of-use-for-datasets"
+            target="_blank" style="color:#4285f4;text-decoration:none;">Creative
+            Commons Attribution 4.0</a> license.
+          </p>
+
+          <h3>Tips</h3>
+          <div class="ref-tip">
+            💡 <strong>Presets</strong> — Use the indicator preset dropdown in
+            the Explorer tab to quickly load common indicator bundles like
+            Economic Basics or Demographics.
+          </div>
+          <div class="ref-tip">
+            💡 <strong>Country groups</strong> — Click G7, BRICS, EU, or other
+            group buttons to select countries in bulk. Combine with region or
+            income filters for precise selection.
+          </div>
+          <div class="ref-tip">
+            💡 <strong>Wide formats</strong> — Choose "Wide (years as columns)"
+            for easy charting in Sheets. Use "Wide (indicators as columns)" to
+            compare multiple indicators side by side.
+          </div>
+          <div class="ref-tip">
+            💡 <strong>Custom functions</strong> — Type
+            <code style="font-size:10px">=WB_DATA("SP.POP.TOTL","USA",2000,2023)</code> directly into
+            a cell for quick lookups without opening the sidebar.
+          </div>
+
+          <h3>Useful Links</h3>
+          <div class="ref-links">
+            <a href="https://data.worldbank.org" target="_blank"
+              >World Bank Open Data portal</a
+            >
+            <a href="https://data360.worldbank.org/en/api" target="_blank"
+              >Data360 API documentation</a
+            >
+            <a href="https://documents.worldbank.org/en/publication/documents-reports/api"
+              target="_blank"
+              >Documents &amp; Reports API</a
+            >
+            <a href="https://datahelpdesk.worldbank.org/knowledgebase/articles/889392-about-the-indicators-api-documentation"
+              target="_blank"
+              >Indicators API reference</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /.sidebar -->
+
+    <!-- Status bar (fixed at bottom) -->
+    <div id="statusBar" class="status-bar hidden"></div>
+
+    <!-- ================================================================ -->
+    <!-- JavaScript                                                       -->
+    <!-- ================================================================ -->
+    <script>
+      // ------------------------------------------------------------------
+      // State
+      // ------------------------------------------------------------------
+      var state = {
+        countries: [], // full country list from server
+        regions: [],
+        incomeLevels: [],
+        topics: [],
+        selectedIndicators: [], // [{id, name}]
+        selectedCountries: [], // ISO3 codes, or ['all']
+        countryGroupActive: "", // current quick-button group key
+        browseIndicator: null, // indicator object currently shown in detail
+        booted: false,
+      };
+
+      // Country group presets (mirrored from WORLD_BANK_Data.gs)
+      var WB_COUNTRY_GROUPS = {
+        all: null,
+        g7: ["USA", "GBR", "FRA", "DEU", "JPN", "ITA", "CAN"],
+        g20: [
+          "ARG",
+          "AUS",
+          "BRA",
+          "CAN",
+          "CHN",
+          "FRA",
+          "DEU",
+          "IND",
+          "IDN",
+          "ITA",
+          "JPN",
+          "KOR",
+          "MEX",
+          "RUS",
+          "SAU",
+          "ZAF",
+          "TUR",
+          "GBR",
+          "USA",
+        ],
+        brics: ["BRA", "RUS", "IND", "CHN", "ZAF"],
+        eu: [
+          "AUT",
+          "BEL",
+          "BGR",
+          "HRV",
+          "CYP",
+          "CZE",
+          "DNK",
+          "EST",
+          "FIN",
+          "FRA",
+          "DEU",
+          "GRC",
+          "HUN",
+          "IRL",
+          "ITA",
+          "LVA",
+          "LTU",
+          "LUX",
+          "MLT",
+          "NLD",
+          "POL",
+          "PRT",
+          "ROU",
+          "SVK",
+          "SVN",
+          "ESP",
+          "SWE",
+        ],
+        nordics: ["DNK", "FIN", "ISL", "NOR", "SWE"],
+        oecd: [
+          "AUS",
+          "AUT",
+          "BEL",
+          "CAN",
+          "CHL",
+          "COL",
+          "CRI",
+          "CZE",
+          "DNK",
+          "EST",
+          "FIN",
+          "FRA",
+          "DEU",
+          "GRC",
+          "HUN",
+          "ISL",
+          "IRL",
+          "ISR",
+          "ITA",
+          "JPN",
+          "KOR",
+          "LVA",
+          "LTU",
+          "LUX",
+          "MEX",
+          "NLD",
+          "NZL",
+          "NOR",
+          "POL",
+          "PRT",
+          "SVK",
+          "SVN",
+          "ESP",
+          "SWE",
+          "CHE",
+          "TUR",
+          "GBR",
+          "USA",
+        ],
+      };
+
+      // ------------------------------------------------------------------
+      // Initialisation
+      // ------------------------------------------------------------------
+      document.addEventListener("DOMContentLoaded", function () {
+        initTabs();
+        initYearDropdowns();
+        initTimeToggle();
+        initIndicatorSearch();
+        initCountrySearch();
+        initCountryGroupButtons();
+        initPresetSelector();
+        bootstrap();
+      });
+
+      function bootstrap() {
+        showStatus("Loading…", "loading");
+        google.script.run
+          .withSuccessHandler(function (data) {
+            state.countries = data.countries || [];
+            state.regions = data.regions || [];
+            state.incomeLevels = data.incomeLevels || [];
+            state.topics = data.topics || [];
+            state.booted = true;
+
+            populateRegionFilter();
+            populateIncomeFilter();
+            populateTopicList();
+            setCountryGroup("all");
+
+            // Restore saved settings
+            if (data.settings) restoreSettings(data.settings);
+
+            hideStatus();
+          })
+          .withFailureHandler(function (err) {
+            showStatus("Failed to load: " + err.message, "error");
+          })
+          .wb_getSidebarBootstrapData();
+      }
+
+      // ------------------------------------------------------------------
+      // Tabs
+      // ------------------------------------------------------------------
+      function initTabs() {
+        var btns = document.querySelectorAll(".tab-btn");
+        btns.forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            btns.forEach(function (b) {
+              b.classList.remove("active");
+            });
+            btn.classList.add("active");
+            document.querySelectorAll(".tab-content").forEach(function (t) {
+              t.classList.remove("active");
+            });
+            document
+              .getElementById("tab-" + btn.dataset.tab)
+              .classList.add("active");
+          });
+        });
+      }
+
+      // ------------------------------------------------------------------
+      // Year dropdowns
+      // ------------------------------------------------------------------
+      function initYearDropdowns() {
+        var currentYear = new Date().getFullYear();
+        var startSel = document.getElementById("startYear");
+        var endSel = document.getElementById("endYear");
+
+        for (var y = currentYear; y >= 1960; y--) {
+          startSel.appendChild(new Option(y, y));
+          endSel.appendChild(new Option(y, y));
+        }
+        startSel.value = currentYear - 10;
+        endSel.value = currentYear;
+      }
+
+      function initTimeToggle() {
+        document
+          .querySelectorAll('input[name="timeMode"]')
+          .forEach(function (r) {
+            r.addEventListener("change", function () {
+              document.getElementById("timeRangeFields").style.display =
+                r.value === "range" ? "flex" : "none";
+              document.getElementById("timeMrvFields").style.display =
+                r.value === "mrv" ? "flex" : "none";
+            });
+          });
+      }
+
+      // ------------------------------------------------------------------
+      // Indicator search
+      // ------------------------------------------------------------------
+      var searchTimer = null;
+
+      function initIndicatorSearch() {
+        var input = document.getElementById("indicatorSearch");
+        input.addEventListener("input", function () {
+          clearTimeout(searchTimer);
+          var q = input.value.trim();
+          if (q.length < 2) {
+            hideIndicatorDropdown();
+            return;
+          }
+          searchTimer = setTimeout(function () {
+            doIndicatorSearch(q);
+          }, 300);
+        });
+        input.addEventListener("keydown", function (e) {
+          if (e.key === "Escape") hideIndicatorDropdown();
+        });
+        // Close dropdown on outside click
+        document.addEventListener("click", function (e) {
+          if (
+            !e.target.closest("#indicatorSearch") &&
+            !e.target.closest("#indicatorDropdown")
+          ) {
+            hideIndicatorDropdown();
+          }
+        });
+      }
+
+      function doIndicatorSearch(query) {
+        // Show spinner in dropdown while searching
+        var dd = document.getElementById("indicatorDropdown");
+        dd.innerHTML =
+          '<div class="dropdown-item" style="color:#888;"><span class="spinner"></span> Searching…</div>';
+        dd.classList.remove("hidden");
+
+        google.script.run
+          .withSuccessHandler(function (results) {
+            renderIndicatorDropdown(results || []);
+          })
+          .withFailureHandler(function () {
+            hideIndicatorDropdown();
+          })
+          .wb_bridgeSearchIndicators(query, null);
+      }
+
+      function renderIndicatorDropdown(indicators) {
+        var dd = document.getElementById("indicatorDropdown");
+        dd.innerHTML = "";
+        if (indicators.length === 0) {
+          dd.innerHTML =
+            '<div class="dropdown-item" style="color:#888;">No results found.</div>';
+          dd.classList.remove("hidden");
+          return;
+        }
+        indicators.forEach(function (ind) {
+          var div = document.createElement("div");
+          div.className = "dropdown-item";
+          div.innerHTML =
+            '<span class="item-code">' +
+            esc(ind.id) +
+            '</span><span class="item-name">' +
+            esc(ind.name) +
+            "</span>";
+          div.addEventListener("click", function () {
+            addIndicator(ind);
+            hideIndicatorDropdown();
+          });
+          dd.appendChild(div);
+        });
+        dd.classList.remove("hidden");
+      }
+
+      function hideIndicatorDropdown() {
+        document.getElementById("indicatorDropdown").classList.add("hidden");
+      }
+
+      function addIndicator(ind) {
+        if (
+          state.selectedIndicators.some(function (s) {
+            return s.id === ind.id;
+          })
+        )
+          return;
+        state.selectedIndicators.push({ id: ind.id, name: ind.name });
+        renderIndicatorChips();
+      }
+
+      function removeIndicator(id) {
+        state.selectedIndicators = state.selectedIndicators.filter(
+          function (s) {
+            return s.id !== id;
+          },
+        );
+        renderIndicatorChips();
+      }
+
+      function renderIndicatorChips() {
+        var container = document.getElementById("indicatorChips");
+        container.innerHTML = "";
+        state.selectedIndicators.forEach(function (ind) {
+          var chip = document.createElement("span");
+          chip.className = "chip";
+          chip.innerHTML =
+            esc(ind.id) +
+            ' <span class="chip-remove" data-id="' +
+            esc(ind.id) +
+            '">&times;</span>';
+          chip
+            .querySelector(".chip-remove")
+            .addEventListener("click", function () {
+              removeIndicator(ind.id);
+            });
+          container.appendChild(chip);
+        });
+      }
+
+      // ------------------------------------------------------------------
+      // Indicator presets
+      // ------------------------------------------------------------------
+      var WB_INDICATOR_PRESETS = {
+        economic: {
+          codes: [
+            "NY.GDP.MKTP.CD",
+            "NY.GDP.MKTP.KD.ZG",
+            "NY.GDP.PCAP.CD",
+            "NY.GNP.MKTP.CD",
+            "FP.CPI.TOTL.ZG",
+          ],
+          names: [
+            "GDP (current US$)",
+            "GDP growth (annual %)",
+            "GDP per capita (current US$)",
+            "GNI (current US$)",
+            "Inflation, consumer prices (annual %)",
+          ],
+        },
+        demographics: {
+          codes: [
+            "SP.POP.TOTL",
+            "SP.POP.GROW",
+            "SP.URB.TOTL.IN.ZS",
+            "SP.DYN.LE00.IN",
+            "SP.DYN.TFRT.IN",
+          ],
+          names: [
+            "Population, total",
+            "Population growth (annual %)",
+            "Urban population (% of total)",
+            "Life expectancy at birth",
+            "Fertility rate, total",
+          ],
+        },
+        health: {
+          codes: ["SP.DYN.IMRT.IN", "SH.DYN.MORT", "SH.XPD.CHEX.GD.ZS"],
+          names: [
+            "Mortality rate, infant",
+            "Mortality rate, under-5",
+            "Current health expenditure (% of GDP)",
+          ],
+        },
+        education: {
+          codes: [
+            "SE.ADT.LITR.ZS",
+            "SE.PRM.ENRR",
+            "SE.SEC.ENRR",
+            "SE.TER.ENRR",
+          ],
+          names: [
+            "Literacy rate, adult",
+            "School enrollment, primary",
+            "School enrollment, secondary",
+            "School enrollment, tertiary",
+          ],
+        },
+        trade: {
+          codes: [
+            "NE.EXP.GNFS.ZS",
+            "NE.IMP.GNFS.ZS",
+            "NE.TRD.GNFS.ZS",
+            "BX.KLT.DINV.WD.GD.ZS",
+          ],
+          names: [
+            "Exports of goods and services (% of GDP)",
+            "Imports of goods and services (% of GDP)",
+            "Trade (% of GDP)",
+            "FDI, net inflows (% of GDP)",
+          ],
+        },
+      };
+
+      function initPresetSelector() {
+        document
+          .getElementById("presetSelect")
+          .addEventListener("change", function () {
+            var key = this.value;
+            if (!key || !WB_INDICATOR_PRESETS[key]) return;
+            var preset = WB_INDICATOR_PRESETS[key];
+            state.selectedIndicators = [];
+            for (var i = 0; i < preset.codes.length; i++) {
+              state.selectedIndicators.push({
+                id: preset.codes[i],
+                name: preset.names[i],
+              });
+            }
+            renderIndicatorChips();
+            this.value = "";
+          });
+      }
+
+      // ------------------------------------------------------------------
+      // Country selection
+      // ------------------------------------------------------------------
+      function initCountrySearch() {
+        var input = document.getElementById("countrySearch");
+        input.addEventListener("focus", function () {
+          showCountryMulti();
+        });
+        input.addEventListener("input", function () {
+          filterCountryMulti();
+        });
+
+        document
+          .getElementById("regionFilter")
+          .addEventListener("change", function () {
+            // When a filter changes, auto-select the filtered countries
+            applyFiltersToSelection();
+            filterCountryMulti();
+          });
+        document
+          .getElementById("incomeFilter")
+          .addEventListener("change", function () {
+            applyFiltersToSelection();
+            filterCountryMulti();
+          });
+      }
+
+      /**
+       * When dropdown filters are applied, update the selection to match
+       * the filtered set (instead of showing "No countries match").
+       */
+      function applyFiltersToSelection() {
+        var regionId = document.getElementById("regionFilter").value;
+        var incomeId = document.getElementById("incomeFilter").value;
+
+        // Only auto-select when filters are active
+        if (!regionId && !incomeId) return;
+
+        // Clear any quick-group highlight
+        state.countryGroupActive = "";
+        document
+          .querySelectorAll(".quick-btns .quick-btn[data-group]")
+          .forEach(function (b) {
+            b.classList.remove("selected");
+          });
+
+        // Select all non-aggregate countries matching the filters
+        state.selectedCountries = state.countries
+          .filter(function (c) {
+            if (c.isAggregate) return false;
+            if (regionId && c.regionId !== regionId) return false;
+            if (incomeId && c.incomeLevelId !== incomeId) return false;
+            return true;
+          })
+          .map(function (c) {
+            return c.id;
+          });
+
+        updateCountryCount();
+      }
+
+      function initCountryGroupButtons() {
+        document
+          .querySelectorAll(".quick-btns .quick-btn[data-group]")
+          .forEach(function (btn) {
+            btn.addEventListener("click", function () {
+              var group = btn.dataset.group;
+
+              // "Clear" button — deselect everything
+              if (group === "none") {
+                state.selectedCountries = [];
+                state.countryGroupActive = "";
+                // Clear filters too
+                document.getElementById("regionFilter").value = "";
+                document.getElementById("incomeFilter").value = "";
+                document.getElementById("countrySearch").value = "";
+                document
+                  .querySelectorAll(".quick-btns .quick-btn[data-group]")
+                  .forEach(function (b) {
+                    b.classList.remove("selected");
+                  });
+                updateCountryCount();
+                renderCountryMultiChecks();
+                return;
+              }
+
+              // Toggle: if already active, deselect
+              if (state.countryGroupActive === group) {
+                state.selectedCountries = [];
+                state.countryGroupActive = "";
+                document
+                  .querySelectorAll(".quick-btns .quick-btn[data-group]")
+                  .forEach(function (b) {
+                    b.classList.remove("selected");
+                  });
+                updateCountryCount();
+                renderCountryMultiChecks();
+                return;
+              }
+
+              setCountryGroup(group);
+            });
+          });
+      }
+
+      function setCountryGroup(group) {
+        state.countryGroupActive = group;
+
+        // Clear dropdown filters when selecting a quick group
+        document.getElementById("regionFilter").value = "";
+        document.getElementById("incomeFilter").value = "";
+        document.getElementById("countrySearch").value = "";
+
+        if (group === "all") {
+          state.selectedCountries = ["all"];
+        } else if (WB_COUNTRY_GROUPS[group]) {
+          state.selectedCountries = WB_COUNTRY_GROUPS[group].slice();
+        }
+
+        // Update button highlight
+        document
+          .querySelectorAll(".quick-btns .quick-btn[data-group]")
+          .forEach(function (b) {
+            b.classList.toggle(
+              "selected",
+              b.dataset.group === group && b.dataset.group !== "none",
+            );
+          });
+
+        updateCountryCount();
+        renderCountryMultiChecks();
+      }
+
+      function showCountryMulti() {
+        var el = document.getElementById("countryMulti");
+        if (el.classList.contains("hidden")) {
+          renderCountryMultiChecks();
+          el.classList.remove("hidden");
+        }
+      }
+
+      function renderCountryMultiChecks() {
+        var container = document.getElementById("countryMulti");
+        container.innerHTML = "";
+        var filtered = getFilteredCountries();
+
+        if (filtered.length === 0) {
+          container.innerHTML =
+            '<div style="padding:8px;font-size:11px;color:#888;">No countries match the search.</div>';
+          container.classList.remove("hidden");
+          return;
+        }
+
+        var isAll =
+          state.selectedCountries.length === 1 &&
+          state.selectedCountries[0] === "all";
+
+        filtered.forEach(function (c) {
+          var label = document.createElement("label");
+          var cb = document.createElement("input");
+          cb.type = "checkbox";
+          cb.value = c.id;
+          cb.checked = isAll || state.selectedCountries.indexOf(c.id) !== -1;
+          cb.addEventListener("change", function () {
+            toggleCountry(c.id, cb.checked);
+          });
+          label.appendChild(cb);
+          label.appendChild(
+            document.createTextNode(" " + c.name + " (" + c.id + ")"),
+          );
+          container.appendChild(label);
+        });
+
+        container.classList.remove("hidden");
+      }
+
+      function toggleCountry(id, checked) {
+        // Switch away from "all" mode to individual selection
+        if (
+          state.selectedCountries.length === 1 &&
+          state.selectedCountries[0] === "all"
+        ) {
+          // Materialise all visible countries, then toggle
+          var visible = getFilteredCountries();
+          state.selectedCountries = visible.map(function (c) {
+            return c.id;
+          });
+        }
+
+        state.countryGroupActive = "";
+        document
+          .querySelectorAll(".quick-btns .quick-btn[data-group]")
+          .forEach(function (b) {
+            b.classList.remove("selected");
+          });
+
+        if (checked) {
+          if (state.selectedCountries.indexOf(id) === -1)
+            state.selectedCountries.push(id);
+        } else {
+          state.selectedCountries = state.selectedCountries.filter(
+            function (c) {
+              return c !== id;
+            },
+          );
+        }
+        updateCountryCount();
+      }
+
+      function getFilteredCountries() {
+        var search = (
+          document.getElementById("countrySearch").value || ""
+        ).toLowerCase();
+        var regionId = document.getElementById("regionFilter").value;
+        var incomeId = document.getElementById("incomeFilter").value;
+
+        return state.countries.filter(function (c) {
+          if (c.isAggregate) return false;
+          if (
+            search &&
+            c.name.toLowerCase().indexOf(search) === -1 &&
+            c.id.toLowerCase().indexOf(search) === -1
+          )
+            return false;
+          if (regionId && c.regionId !== regionId) return false;
+          if (incomeId && c.incomeLevelId !== incomeId) return false;
+          return true;
+        });
+      }
+
+      function filterCountryMulti() {
+        renderCountryMultiChecks();
+      }
+
+      function updateCountryCount() {
+        var el = document.getElementById("countryCount");
+        if (
+          state.selectedCountries.length === 1 &&
+          state.selectedCountries[0] === "all"
+        ) {
+          el.textContent = "(all)";
+        } else if (state.selectedCountries.length === 0) {
+          el.textContent = "(none)";
+        } else {
+          el.textContent = "(" + state.selectedCountries.length + " selected)";
+        }
+      }
+
+      function populateRegionFilter() {
+        var sel = document.getElementById("regionFilter");
+        // Build from unique regionId values in the country data
+        // (the /region API returns ~48 entries, but only 7 are used as regionId)
+        var seen = {};
+        var regions = [];
+        state.countries.forEach(function (c) {
+          if (!c.isAggregate && c.regionId && c.region && !seen[c.regionId]) {
+            seen[c.regionId] = true;
+            regions.push({ id: c.regionId, name: c.region });
+          }
+        });
+        regions.sort(function (a, b) {
+          return a.name.localeCompare(b.name);
+        });
+        regions.forEach(function (r) {
+          sel.appendChild(new Option(r.name, r.id));
+        });
+      }
+
+      function populateIncomeFilter() {
+        var sel = document.getElementById("incomeFilter");
+        state.incomeLevels.forEach(function (l) {
+          sel.appendChild(new Option(l.name, l.id));
+        });
+      }
+
+      // ------------------------------------------------------------------
+      // Browse tab — Topics & Indicators
+      // ------------------------------------------------------------------
+      function populateTopicList() {
+        var container = document.getElementById("topicList");
+        container.innerHTML = "";
+
+        state.topics.forEach(function (topic) {
+          var item = document.createElement("div");
+          item.className = "topic-list-item";
+          item.textContent = topic.name;
+
+          var indContainer = document.createElement("div");
+          indContainer.className = "topic-indicators";
+          indContainer.id = "topic-ind-" + topic.id;
+
+          item.addEventListener("click", function () {
+            var isOpen = indContainer.classList.contains("open");
+            // Close all
+            document
+              .querySelectorAll(".topic-indicators")
+              .forEach(function (t) {
+                t.classList.remove("open");
+              });
+            if (!isOpen) {
+              indContainer.classList.add("open");
+              if (indContainer.children.length === 0)
+                loadTopicIndicators(topic.id, indContainer);
+            }
+          });
+
+          container.appendChild(item);
+          container.appendChild(indContainer);
+        });
+      }
+
+      function loadTopicIndicators(topicId, container) {
+        container.innerHTML =
+          '<div style="padding:6px;font-size:11px;color:#888;">Loading…</div>';
+        google.script.run
+          .withSuccessHandler(function (indicators) {
+            container.innerHTML = "";
+            if (!indicators || indicators.length === 0) {
+              container.innerHTML =
+                '<div style="padding:6px;font-size:11px;color:#888;">No indicators.</div>';
+              return;
+            }
+            indicators.forEach(function (ind) {
+              var div = document.createElement("div");
+              div.className = "ind-list-item";
+              div.innerHTML =
+                '<span class="ind-code">' +
+                esc(ind.id) +
+                "</span> " +
+                esc(ind.name);
+              div.addEventListener("click", function (e) {
+                e.stopPropagation();
+                showIndicatorDetail(ind);
+              });
+              container.appendChild(div);
+            });
+          })
+          .withFailureHandler(function () {
+            container.innerHTML =
+              '<div style="padding:6px;font-size:11px;color:#d93025;">Failed to load.</div>';
+          })
+          .wb_bridgeGetTopicIndicators(topicId);
+      }
+
+      function showIndicatorDetail(ind) {
+        state.browseIndicator = ind;
+        document.getElementById("detailTitle").textContent = ind.name;
+        document.getElementById("detailCode").textContent = ind.id;
+        document.getElementById("detailNote").textContent =
+          ind.sourceNote || "(no description)";
+        document.getElementById("detailOrg").textContent =
+          ind.sourceOrganization || "";
+        document.getElementById("indicatorDetail").style.display = "block";
+      }
+
+      function useIndicatorFromBrowse() {
+        if (!state.browseIndicator) return;
+        addIndicator(state.browseIndicator);
+        // Switch to Explorer tab
+        document.querySelector('.tab-btn[data-tab="explorer"]').click();
+      }
+
+      // ------------------------------------------------------------------
+      // Quick Ref / Reference
+      // ------------------------------------------------------------------
+      function writeRef(type) {
+        var query =
+          type === "indicators"
+            ? document.getElementById("refIndicatorQuery").value.trim()
+            : null;
+        if (type === "indicators" && !query) {
+          showStatus("Enter a search term.", "error");
+          return;
+        }
+        showStatus(
+          '<span class="spinner"></span> Writing reference sheet…',
+          "loading",
+        );
+        google.script.run
+          .withSuccessHandler(function (result) {
+            if (result.success) {
+              showStatus("Reference sheet created.", "success");
+            } else {
+              showStatus(result.error || "Unknown error.", "error");
+            }
+          })
+          .withFailureHandler(function (err) {
+            showStatus("Error: " + err.message, "error");
+          })
+          .wb_bridgeWriteReference(type, query);
+      }
+
+      // ------------------------------------------------------------------
+      // Fetch handler
+      // ------------------------------------------------------------------
+      function handleFetch() {
+        if (state.selectedIndicators.length === 0) {
+          showStatus("Select at least one indicator.", "error");
+          return;
+        }
+
+        var timeMode = document.querySelector(
+          'input[name="timeMode"]:checked',
+        ).value;
+        var format = document.querySelector(
+          'input[name="format"]:checked',
+        ).value;
+        var dest = document.querySelector(
+          'input[name="destination"]:checked',
+        ).value;
+
+        var params = {
+          indicators: state.selectedIndicators.map(function (i) {
+            return i.id;
+          }),
+          countries: state.selectedCountries,
+          timeMode: timeMode,
+          startYear:
+            timeMode === "range"
+              ? parseInt(document.getElementById("startYear").value, 10)
+              : null,
+          endYear:
+            timeMode === "range"
+              ? parseInt(document.getElementById("endYear").value, 10)
+              : null,
+          mrvCount:
+            timeMode === "mrv"
+              ? parseInt(document.getElementById("mrvCount").value, 10)
+              : null,
+          mrvNonEmpty: document.getElementById("mrvNonEmpty").checked,
+          format: format,
+          destination: dest,
+          includeMetadata: document.getElementById("includeMetadata").checked,
+          skipAggregates: document.getElementById("skipAggregates").checked,
+        };
+
+        var btn = document.getElementById("fetchBtn");
+        btn.disabled = true;
+        btn.textContent = "Fetching…";
+        showStatus('<span class="spinner"></span> Fetching data…', "loading");
+
+        google.script.run
+          .withSuccessHandler(function (result) {
+            btn.disabled = false;
+            btn.textContent = "Fetch Data";
+            if (result.success) {
+              showStatus(
+                "Done — " + result.rowCount + " rows written.",
+                "success",
+              );
+            } else {
+              showStatus(result.error || "No data returned.", "error");
+            }
+          })
+          .withFailureHandler(function (err) {
+            btn.disabled = false;
+            btn.textContent = "Fetch Data";
+            showStatus("Error: " + err.message, "error");
+          })
+          .wb_bridgeFetchData(params);
+      }
+
+      // ------------------------------------------------------------------
+      // Settings restore
+      // ------------------------------------------------------------------
+      function restoreSettings(s) {
+        if (s.indicators && s.indicators.length) {
+          // We only have codes; build chip objects
+          s.indicators.forEach(function (code) {
+            if (
+              !state.selectedIndicators.some(function (i) {
+                return i.id === code;
+              })
+            ) {
+              state.selectedIndicators.push({ id: code, name: code });
+            }
+          });
+          renderIndicatorChips();
+        }
+
+        if (s.timeMode) {
+          var radio = document.querySelector(
+            'input[name="timeMode"][value="' + s.timeMode + '"]',
+          );
+          if (radio) {
+            radio.checked = true;
+            radio.dispatchEvent(new Event("change"));
+          }
+        }
+        if (s.startYear)
+          document.getElementById("startYear").value = s.startYear;
+        if (s.endYear) document.getElementById("endYear").value = s.endYear;
+        if (s.mrvCount) document.getElementById("mrvCount").value = s.mrvCount;
+        if (s.mrvNonEmpty)
+          document.getElementById("mrvNonEmpty").checked = true;
+        if (s.format) {
+          var fRadio = document.querySelector(
+            'input[name="format"][value="' + s.format + '"]',
+          );
+          if (fRadio) fRadio.checked = true;
+        }
+        if (s.destination) {
+          var dRadio = document.querySelector(
+            'input[name="destination"][value="' + s.destination + '"]',
+          );
+          if (dRadio) dRadio.checked = true;
+        }
+        if (s.includeMetadata === false)
+          document.getElementById("includeMetadata").checked = false;
+        if (s.skipAggregates)
+          document.getElementById("skipAggregates").checked = true;
+      }
+
+      // ------------------------------------------------------------------
+      // Status bar
+      // ------------------------------------------------------------------
+      function showStatus(msg, type) {
+        var bar = document.getElementById("statusBar");
+        bar.innerHTML = msg;
+        bar.className = "status-bar " + (type || "");
+        bar.classList.remove("hidden");
+
+        if (type === "success" || type === "error") {
+          setTimeout(function () {
+            hideStatus();
+          }, 5000);
+        }
+      }
+
+      function hideStatus() {
+        document.getElementById("statusBar").classList.add("hidden");
+      }
+
+      // ------------------------------------------------------------------
+      // Utils
+      // ------------------------------------------------------------------
+      function esc(str) {
+        var d = document.createElement("div");
+        d.textContent = str || "";
+        return d.innerHTML;
+      }
+    </script>
+  </body>
+</html>
