@@ -6,56 +6,31 @@
  * Fetch all available OECD dataflows (datasets).
  *
  * Returns a flat array suitable for searching. Results are cached for 6 hours.
- * The OECD API sometimes returns XML instead of JSON for the dataflow/all
- * endpoint, so this function handles both formats.
+ *
+ * Uses detail=allstubs to request a compact response (~800 KB JSON instead of
+ * 8+ MB full response) — this avoids CDN truncation issues that were causing
+ * "Unterminated string in JSON" errors when Google's servers received a
+ * partial response from CloudFlare.
  *
  * @returns {Object[]} Array of {id, name, agency, version}.
  */
 function oecd_getDataflows() {
   var cache = CacheService.getScriptCache();
-  var cacheKey = "oecd_dataflows_all";
+  var cacheKey = "oecd_dataflows_v2";
 
   var cached = oecd_getChunkedCache_(cache, cacheKey);
   if (cached) {
     try {
       return JSON.parse(cached);
     } catch (e) {
-      // Corrupt — fall through
+      // Corrupt — clear and fall through to fresh fetch
+      oecd_clearChunkedCache_(cache, cacheKey);
     }
   }
 
-  var url = OECD_BASE_URL + "/dataflow/all";
-  var response = UrlFetchApp.fetch(url, {
-    muteHttpExceptions: true,
-    headers: { Accept: "application/vnd.sdmx.structure+json" },
-  });
+  var result = oecd_fetchDataflowList_();
 
-  if (response.getResponseCode() !== 200) {
-    throw new Error(
-      "Failed to fetch dataflow list (HTTP " + response.getResponseCode() + ")",
-    );
-  }
-
-  var text = response.getContentText();
-  var result;
-
-  if (text.charAt(0) === "{") {
-    var data = JSON.parse(text);
-    var dataflows = (data.data && data.data.dataflows) || [];
-    result = [];
-    for (var i = 0; i < dataflows.length; i++) {
-      var df = dataflows[i];
-      result.push({
-        id: df.id,
-        name: df.name || (df.names && df.names.en) || df.id,
-        agency: df.agencyID || "",
-        version: df.version || "",
-      });
-    }
-  } else {
-    result = oecd_parseDataflowXml_(text);
-  }
-
+  // Sort by name
   result.sort(function (a, b) {
     return a.name.localeCompare(b.name);
   });
@@ -67,6 +42,79 @@ function oecd_getDataflows() {
   }
 
   return result;
+}
+
+/**
+ * Fetch and parse the dataflow list, with retry and multi-format support.
+ *
+ * Strategy:
+ *   1. Request compact JSON (detail=allstubs, ~800 KB).
+ *   2. If the API returns XML instead, fall back to regex parsing.
+ *   3. Retry once on failure with a short delay.
+ *
+ * @returns {Object[]} Parsed dataflows.
+ * @private
+ */
+function oecd_fetchDataflowList_() {
+  var MAX_TRIES = 2;
+  var lastError = null;
+
+  for (var attempt = 0; attempt < MAX_TRIES; attempt++) {
+    var url = OECD_BASE_URL + "/dataflow/all?detail=allstubs";
+    var response = UrlFetchApp.fetch(url, {
+      muteHttpExceptions: true,
+      headers: { Accept: "application/vnd.sdmx.structure+json" },
+    });
+
+    if (response.getResponseCode() !== 200) {
+      lastError = new Error(
+        "Failed to fetch dataflow list (HTTP " +
+          response.getResponseCode() +
+          ")",
+      );
+      Utilities.sleep(2000);
+      continue;
+    }
+
+    var text = response.getContentText();
+    var result;
+
+    if (text.charAt(0) === "{") {
+      try {
+        var data = JSON.parse(text);
+        var dataflows = (data.data && data.data.dataflows) || [];
+        result = [];
+        for (var i = 0; i < dataflows.length; i++) {
+          var df = dataflows[i];
+          result.push({
+            id: df.id,
+            name: df.name || (df.names && df.names.en) || df.id,
+            agency: df.agencyID || "",
+            version: df.version || "",
+          });
+        }
+        if (result.length > 0) {
+          return result;
+        }
+      } catch (e) {
+        lastError = e;
+      }
+    }
+
+    // Fall back to XML regex parsing
+    result = oecd_parseDataflowXml_(text);
+    if (result.length > 0) {
+      return result;
+    }
+
+    // Both parsers returned nothing — retry after a short delay
+    Utilities.sleep(2000);
+  }
+
+  throw new Error(
+    "Could not load dataset list. The OECD API may be experiencing issues. " +
+      (lastError ? "(" + lastError.message + ")" : ""),
+  );
 }
 
 /**
@@ -95,11 +143,13 @@ function oecd_parseDataflowXml_(xml) {
 }
 
 /**
- * Store a large string in CacheService by splitting into 100 KB chunks.
+ * Store a large string in CacheService by splitting into chunks.
+ * Uses 50 KB chunks (well under 100 KB limit) to avoid any byte-vs-char
+ * edge cases with multi-byte characters.
  * @private
  */
 function oecd_putChunkedCache_(cache, key, str, ttlSecs) {
-  var CHUNK = 99000;
+  var CHUNK = 50000;
   var chunks = Math.ceil(str.length / CHUNK);
   if (chunks <= 1) {
     cache.put(key, str, ttlSecs);
@@ -111,6 +161,23 @@ function oecd_putChunkedCache_(cache, key, str, ttlSecs) {
     map[key + "_" + i] = str.substring(i * CHUNK, (i + 1) * CHUNK);
   }
   cache.putAll(map, ttlSecs);
+}
+
+/**
+ * Remove a chunked cache entry (header + all chunks).
+ * @private
+ */
+function oecd_clearChunkedCache_(cache, key) {
+  var header = cache.get(key);
+  if (!header) return;
+  var n = parseInt(header, 10);
+  var keys = [key];
+  if (!isNaN(n)) {
+    for (var i = 0; i < n; i++) {
+      keys.push(key + "_" + i);
+    }
+  }
+  cache.removeAll(keys);
 }
 
 /**
