@@ -198,6 +198,7 @@ Each API integration typically includes:
 - **One sidebar at a time** — Google Sheets only allows a single sidebar to be open. Opening a different API's sidebar closes the current one.
 - **Execution limits** — Google Apps Script has a 6-minute execution timeout. Use dimension filters and observation limits to keep large queries manageable.
 - **Caching** — All integrations cache metadata (typically for 6 hours) to minimise API calls and speed up repeated queries.
+- **Broken features** - If some feature is broken, it is most likely due to breaking changes in the APIs. The add-on will be updated infrequently, and the API descriptions will be checked and connections will be tested, when updates are made. Annual updates are planned.
 
 ## License
 
